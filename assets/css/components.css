@@ -295,3 +295,61 @@ figure.code figcaption {
 .compare-table tbody tr:last-child td {
   border-bottom: 0;
 }
+
+.project-card {
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--ground);
+  border-radius: var(--radius-card);
+  padding: var(--pad-card-project);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.project-card:hover {
+  color: var(--ink);
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+}
+
+.project-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.project-name {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: var(--weight-medium);
+}
+
+.status-pill {
+  font-size: var(--text-mono-label);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 1px 10px;
+}
+
+.project-text {
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.docs-text {
+  max-width: 30em;
+}
+
+.doc-links li {
+  border-top: 1px solid var(--line);
+}
+
+.doc-links a {
+  display: block;
+  padding: 13px 0;
+  text-decoration: none;
+  font-size: 19px;
+}

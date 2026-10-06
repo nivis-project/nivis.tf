@@ -12,11 +12,6 @@ import pathlib
 import re
 import sys
 
-# Sections whose partials are still empty. A navigation entry may point at one
-# of these without resolving yet. This list shrinks to nothing as the sections
-# land, and the check fails loudly if it is empty and a target still dangles.
-UNBUILT_SECTIONS = {"projects"}
-
 HEADING = re.compile(r"<h([1-6])\b", re.I)
 ID = re.compile(r"""\bid\s*=\s*["']([^"']+)["']""", re.I)
 ANCHOR = re.compile(r"""<a\b[^>]*?\bhref\s*=\s*["']#([^"']+)["']""", re.I)
@@ -42,19 +37,13 @@ def main():
 
     ids = set(ID.findall(html))
     targets = set(ANCHOR.findall(html))
-    dangling = sorted(t for t in targets if t not in ids)
-    still_unbuilt = sorted(t for t in dangling if t in UNBUILT_SECTIONS)
-    real = sorted(t for t in dangling if t not in UNBUILT_SECTIONS)
-    for t in real:
+    # Every same-page target is checked unconditionally. While sections were
+    # still stubs this carried an UNBUILT_SECTIONS exemption that failed once
+    # every section in it resolved, so it could not quietly outlive its purpose.
+    # The last section landed, so the exemption is gone rather than left empty:
+    # an empty exemption set reads like a disabled guard.
+    for t in sorted(targets - ids):
         errors.append(f"a link points at #{t}, which the page does not contain")
-    if not still_unbuilt and UNBUILT_SECTIONS:
-        # Every exempted section now resolves: the exemption is dead weight.
-        resolved = sorted(s for s in UNBUILT_SECTIONS if s in ids)
-        if len(resolved) == len(UNBUILT_SECTIONS):
-            errors.append(
-                "every section in UNBUILT_SECTIONS now resolves; remove the "
-                "exemption in tests/checks/page-chrome.py so it guards again"
-            )
 
     # The chrome takes its strings from data, so the data's values must appear.
     site = (root / "data" / "site.yaml").read_text()
@@ -89,7 +78,7 @@ def main():
 
     print(
         f"page-chrome: ok, 1 h1 and {len(ranks)} headings in rank order, "
-        f"{len(targets)} same-page links ({len(still_unbuilt)} awaiting a section), "
+        f"{len(targets)} same-page links all resolve, "
         f"chrome strings from data, focus and hover rules present"
     )
     return 0

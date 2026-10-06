@@ -1,1 +1,22 @@
-<section data-section="projects"></section>
+{{- $d := hugo.Data.home.projects -}}
+{{- $org := hugo.Data.site.github_org -}}
+<section id="{{ $d.id }}" class="surface" aria-labelledby="h-projects">
+  <div class="container section stack projects">
+    <div class="stack section-head">
+      <h2 id="h-projects">{{ $d.title }}</h2>
+      <p class="muted section-lead">{{ $d.lead | markdownify }}</p>
+    </div>
+    <div class="grid project-cards">
+      {{- range $d.items }}
+      <a class="project-card" href="{{ printf "%s/%s" $org .name }}">
+        {{ partial "mark.html" (dict "name" .mark "variant" "project" "size" 64) }}
+        <span class="project-head">
+          <span class="project-name">{{ .name }}</span>
+          <span class="status-pill">{{ .status }}</span>
+        </span>
+        <span class="project-text">{{ .text }}</span>
+      </a>
+      {{- end }}
+    </div>
+  </div>
+</section>

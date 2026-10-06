@@ -1,1 +1,15 @@
-<section data-section="docs"></section>
+{{- $d := hugo.Data.home.docs -}}
+<section aria-labelledby="h-docs">
+  <div class="container section grid docs">
+    <div class="stack docs-copy">
+      <h2 id="h-docs">{{ $d.title }}</h2>
+      <p class="muted docs-text">{{ $d.text }}</p>
+      <a class="button button-primary" href="{{ $d.cta.href }}">{{ $d.cta.label }}</a>
+    </div>
+    <ul class="grid doc-links">
+      {{- range $d.links }}
+      <li><a href="{{ partial "link.html" . }}">{{ .label }}</a></li>
+      {{- end }}
+    </ul>
+  </div>
+</section>

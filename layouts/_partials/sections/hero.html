@@ -1,8 +1,8 @@
 {{- $d := hugo.Data.home.hero -}}
-<section class="section hero container grid" id="top">
+<section class="section hero container grid" id="top" aria-labelledby="h-hero">
   <div class="stack hero-copy">
     <p class="pill">{{ $d.badge }}</p>
-    <h1>{{ $d.title }}</h1>
+    <h1 id="h-hero">{{ $d.title }}</h1>
     <p class="lead">{{ $d.lead | markdownify }}</p>
     <div class="hero-actions">
       <a class="button button-primary" href="{{ $d.primary.href }}">{{ $d.primary.label }}</a>

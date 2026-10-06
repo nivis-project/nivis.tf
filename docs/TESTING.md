@@ -28,6 +28,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `assets`                     | one fingerprinted stylesheet, the right font set, nothing external | present |
 | `page-chrome`                | heading structure, same-page link targets, chrome strings from data | present |
 | `sections`                   | the page agrees with the data, section by section  | present |
+| `acceptance`                 | the briefing's add-a-project criterion, replayed literally | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -58,7 +59,30 @@ run against a deliberate violation before being trusted.
 | `mark`                       | six probes: flipped rotation, off-by-one sample count, changed radius, colour literal, data changed after render, undeclared mark |
 | `assets`                     | five probes: a CDN stylesheet, a CDN script, a protocol-relative URL, a `url()` in CSS, a dead preload |
 | `page-chrome`                | six probes: a second h1, a skipped rank, a dangling nav target, missing focus rules, a broken skip link, stale chrome |
-| `sections`                   | twelve probes, including a div pretending to be a table, a moved highlight, a stray `overflow-x`, and a hard-coded subject column |
+| `sections`                   | seventeen probes, including a div pretending to be a table, a moved highlight, a stray `overflow-x`, a hard-coded subject column, a nested link, an unlabelled section |
+| `acceptance`                 | three probes: a template rendering only the first six items, a hard-coded destination, a non-generated mark |
+
+### Execute the acceptance criterion, do not paraphrase it
+
+Section 11 of the briefing says: *"Adding a project to
+`data/home/projects.yaml` and `data/marks.yaml` adds a card with a generated
+mark, with no template change."*
+
+`tests/checks/acceptance.sh` replays that sentence rather than restating it as a
+property. It really adds a project to a copy of the data, really rebuilds, and
+then **diffs `layouts/` and `assets/`**.
+
+The diff is the load-bearing part. Without it, the test could pass while
+somebody had quietly added a special case to the template for the new project,
+which is precisely the failure the criterion is written to prevent.
+
+### The exemption was deleted, not emptied
+
+While sections were still stubs, `page-chrome` carried an `UNBUILT_SECTIONS`
+set, and it was built to **fail once every section in it resolved**, so it could
+not quietly outlive its purpose. The last section landed and the constant and
+its branch were removed, not left as an empty set. An empty exemption reads like
+a disabled guard and invites somebody to put an entry back in it.
 
 ### Test the mechanism, not the outcome
 

@@ -141,3 +141,31 @@
 .compare {
   gap: var(--space-32);
 }
+
+.projects {
+  gap: var(--space-40);
+}
+
+.project-cards {
+  --col-min: 320px;
+  gap: 20px;
+}
+
+.docs {
+  --col-min: 420px;
+  gap: var(--space-40);
+  align-items: start;
+}
+
+.docs-copy {
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.doc-links {
+  --col-min: 200px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  gap: 0 var(--space-32);
+}

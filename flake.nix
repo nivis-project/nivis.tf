@@ -182,6 +182,24 @@
 
           snippets = script "snippets" [ pythonEnv ];
 
+          # Replays the briefing's acceptance criterion literally: it really
+          # adds a project, rebuilds, and diffs layouts/ and assets/.
+          acceptance =
+            pkgs.runCommand "check-acceptance"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                  pkgs.diffutils
+                  pkgs.gnugrep
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/acceptance.sh src
+                touch "$out"
+              '';
+
           sections =
             pkgs.runCommand "check-sections"
               {

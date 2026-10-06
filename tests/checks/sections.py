@@ -22,8 +22,8 @@ SECTIONS = {
     "quickstart": ("home/quickstart.yaml", ["steps"], r'class="step"'),
     "roundtrip": ("home/roundtrip.yaml", ["phases"], r'class="phase"'),
     "compare": ("home/compare.yaml", ["rows"], r'<th scope="row"'),
-    "projects": None,
-    "docs": None,
+    "projects": ("home/projects.yaml", ["items"], r'class="project-card"'),
+    "docs": ("home/docs.yaml", ["links"], r"<li><a href="),
 }
 
 
@@ -122,6 +122,29 @@ def main():
             if not m.group(1).strip():
                 errors.append("a qualified cell has no text, so its meaning rests on colour alone")
                 break
+
+    # A card that acts as a link must be ONE link. A card with a link on the
+    # title and another on the mark reads as one thing visually and as three to
+    # a keyboard.
+    for card in re.findall(r'<a class="project-card".*?</a>', html, re.S):
+        inner = len(re.findall(r"<a\b", card))
+        if inner != 1:
+            errors.append(f"a project card contains {inner} link elements, expected exactly 1")
+            break
+    if re.search(r"<a\b[^>]*>(?:(?!</a>).)*?<a\b", html, re.S):
+        errors.append("the page contains a link nested inside another link")
+
+    # Every section is labelled by its own heading, so a reader listing the
+    # page's regions sees what each one is.
+    for m in re.finditer(r"<section\b([^>]*)>", html):
+        attrs = m.group(1)
+        if "aria-labelledby" not in attrs and "aria-label" not in attrs:
+            errors.append(f"a section has no accessible name: <section{attrs}>")
+            break
+    labelled = re.findall(r'aria-labelledby="([^"]+)"', html)
+    for ref in labelled:
+        if f'id="{ref}"' not in html:
+            errors.append(f"a section is labelled by #{ref}, which does not exist")
 
     # Ordinal labels that appear as text are generated from position.
     ordinals = re.findall(r'class="mono-label band-label">(\d+)\s', html)

@@ -50,3 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The round trip band and the comparison table render from data. The table is a
   real table with scoped headers, the highlighted column follows a flag in the
   data, and it scrolls inside its own box so the page never scrolls sideways.
+- The projects and go deeper sections render from data. Adding a project to
+  `data/home/projects.yaml` and `data/marks.yaml` adds a card with a generated
+  mark and no template change, which the gate proves by doing it.
