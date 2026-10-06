@@ -233,6 +233,34 @@
 
           snippets = script "snippets" [ pythonEnv ];
 
+          html =
+            pkgs.runCommand "check-html"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pkgs.html5validator
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/html.sh src
+                touch "$out"
+              '';
+
+          links =
+            pkgs.runCommand "check-links"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/links.sh src
+                touch "$out"
+              '';
+
           # The project's one hard architectural rule, enforced.
           separation =
             pkgs.runCommand "check-separation"
@@ -487,6 +515,25 @@
           '';
         }
       );
+
+      # Resolving URLs needs the network, so this cannot be a flake check. Run it
+      # before a release. Pretending a sandboxed check proves a URL is reachable
+      # would be the dishonest option, so the two are separate on purpose.
+      apps = forAllSystems (pkgs: {
+        check-links-live = {
+          type = "app";
+          program = toString (
+            pkgs.writeShellScript "check-links-live" ''
+              set -euo pipefail
+              out=$(mktemp -d)
+              trap 'rm -rf "$out"' EXIT
+              ${pkgs.hugo}/bin/hugo --destination "$out/public" --environment production >/dev/null
+              echo "==> resolving every link in the built site"
+              ${pkgs.lychee}/bin/lychee --no-progress --include-fragments "$out/public"
+            ''
+          );
+        };
+      });
 
       formatter = forAllSystems (
         pkgs:

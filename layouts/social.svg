@@ -20,6 +20,8 @@
 {{- $inner = replace $inner (printf "var(--%s)" $n) $v -}}
 {{- end -}}
 {{- $inner = replace $inner "<svg viewBox=\"-100 -100 200 200\"" "<svg x=\"80\" y=\"115\" width=\"370\" height=\"370\" viewBox=\"-100 -100 200 200\"" -}}
+{{- /* aria-hidden is not valid on a nested svg inside an svg document. */ -}}
+{{- $inner = replace $inner " aria-hidden=\"true\"" "" -}}
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
 <rect width="1200" height="630" fill="{{ index $colors "ground" }}"/>
 {{ $inner | safeHTML }}

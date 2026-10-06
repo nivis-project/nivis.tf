@@ -19,4 +19,15 @@
 {{- range $n, $v := $colors -}}
 {{- $out = replace $out (printf "var(--%s)" $n) $v -}}
 {{- end -}}
+{{- /* A standalone SVG file needs the XML namespace, which inline SVG in an
+       HTML page does not. aria-hidden is likewise an inline-only concern: on a
+       file's root element it is invalid. The Nu validator caught both. */ -}}
+{{- $out = replace $out "<svg viewBox=" "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=" -}}
+{{- $out = replace $out " aria-hidden=\"true\"" "" -}}
+{{- /* `replace` inserts text, it does not evaluate template syntax, so the
+       accessible name has to be interpolated before it goes in. */ -}}
+{{- /* In a standalone SVG document the accessible name is <title>, not
+       aria-label, which the validator rejects on the root element. */ -}}
+{{- $label := printf " role=\"img\"><title>%s</title" hugo.Data.site.name -}}
+{{- $out = replace $out "\"-100 -100 200 200\">" (printf "\"-100 -100 200 200\"%s>" $label) -}}
 {{ $out | safeHTML }}

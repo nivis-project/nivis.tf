@@ -37,14 +37,16 @@ names the thing that broke rather than reporting "the tests failed".
 | `metadata`                   | sharing metadata agrees with the page and is absolute | present |
 | `font-coverage`              | every rendered character exists in the served fonts | present |
 | `separation`                 | no copy in templates, no inline style in the output | present |
-| `html`                       | the generated HTML is valid and semantic          | planned |
-| `links`                      | every external link resolves                      | planned |
-| `e2e`                        | Playwright against the built `public/`            | planned |
-| `a11y`                       | axe-core over the built page in both themes       | planned |
+| `html`                       | every generated HTML and SVG document validates    | present |
+| `links`                      | links are absolute, https, and on expected hosts   | present |
 
-"planned" means the epic that owns it has not shipped yet. Milestone 01, epic
-`nivistf-7mto`, builds the harness and wires the remaining checks. Milestone 02,
-epic `nivistf-rs19`, fills in `invariants`.
+Every check in this table exists. `a11y` is not a separate check: axe-core runs
+inside `e2e`, in both palettes, because it needs the same browser.
+
+Two things are deliberately **not** in the gate, each for a reason recorded
+below: a Lighthouse performance score, and actually resolving external links.
+Both would be checks that fail or pass for reasons unrelated to the change being
+tested.
 
 ### What each present check guards, and how it was proven to bite
 
@@ -282,6 +284,24 @@ instead of a stub, it failed for a reason that had nothing to do with dispatch.
 The fixture now ships its own section stubs, mounted ahead of the real layouts.
 The alternative, adding `data-section` attributes to production markup so tests
 can see the structure, would have put test scaffolding into what ships.
+
+### The dominant failure mode: correct pieces, wrong composition
+
+Four defects in this project shared one shape. Each component was correct in its
+own context and wrong once combined, and in every case the individual checks
+passed.
+
+| Defect | Each piece was correct |
+|---|---|
+| Code blocks rendered at 1.14:1 on the page background | both CSS rules were valid; `.chroma` outranked `figure.code pre` |
+| The theme button was visible and inert without JavaScript | the `hidden` attribute was present; an author `display` beat it |
+| A theme test passed while asserting nothing | the helper was reasonable; Chromium serialises `oklch()` as `oklch()` |
+| The favicon and social image were invalid SVG documents | the mark partial emits correct **inline** SVG; a standalone file needs `xmlns` and `<title>` |
+
+None was caught by reading the source. Every one was caught by running the real
+artifact through a real tool: a browser, axe-core, the Nu validator. That is the
+argument for the end-to-end and validation checks existing at all, and it is why
+they are worth their runtime.
 
 ### Check the artifact that ships, not a convenient stand-in
 
@@ -571,6 +591,20 @@ real regression fails. Raising one should be a visible decision in a diff.
 58% of the raw HTML is generated mark path data, 32 paths of 120 sampled points
 each. It gzips to roughly a quarter, which is why the budget is on transferred
 bytes rather than raw.
+
+### Why resolving links is not in the gate
+
+The sandbox has no network. A check cannot prove a URL resolves without
+requesting it, and one that implied otherwise would be exactly the kind of green
+tick this project has repeatedly had to correct.
+
+The gated half verifies what is verifiable offline: every external address is
+absolute, uses https, and points at a host in an explicit allowlist. That
+catches a typo in a repository name or a docs path, which is the realistic
+failure. It prints its own limit every time it passes.
+
+Resolution is `nix run .#check-links-live`, a separate app using lychee, meant
+for before a release.
 
 ### Why there is no Lighthouse score in the gate
 

@@ -71,6 +71,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The architectural rule is now fully enforced: the gate fails if a template
   gains a word a reader would see, or if any inline style reaches the HTML.
 
+- Every generated document, HTML and SVG alike, is validated against its
+  format, and external links are checked for scheme and host. Resolving them is
+  a separate `nix run .#check-links-live` before a release.
+
 ### Fixed
 
 - Code samples rendered on the page background instead of their own dark one,
@@ -78,3 +82,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Chroma's line wrappers also matched the code block itself and outranked it.
 - The theme button was visible and did nothing when JavaScript was unavailable,
   because a layout rule overrode the attribute that should have hidden it.
+- The generated favicon and social image were invalid as standalone SVG files:
+  they lacked the XML namespace and carried an accessible name in a form a
+  document root does not allow.
