@@ -9,6 +9,10 @@ module:
       target: layouts
     - source: ../../../i18n
       target: i18n
+    - source: ../../../assets
+      target: assets
+    - source: ../../../data
+      target: data
     - source: snippets
       target: assets/snippets
     - source: content

@@ -1,0 +1,8 @@
+/* A negative fixture. Every line here is a color notation the rule forbids
+   outside tokens.css. tests/checks/css-colors.sh asserts that scanning this
+   directory FAILS; if it ever passes, the scan has a hole. */
+.hex { color: #ff0000; }
+.rgb { color: rgb(1, 2, 3); }
+.hsl { background: hsl(1 2% 3%); }
+.oklch { color: oklch(0.5 0.1 275); }
+.named { border-color: red; }

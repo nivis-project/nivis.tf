@@ -1,0 +1,3 @@
+/* The one file allowed to hold a color. Present so the fixture proves the
+   exemption works, not just that the scan fires. */
+:root { --ground: oklch(0.975 0.008 275); }

@@ -26,3 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   template change.
 - Code samples live in `snippets/` as files in their own language and render
   byte for byte, highlighted with CSS classes.
+- Every color, font size and spacing value is a design token. The palette is
+  generated from one list, so the light and dark rule sets cannot drift apart,
+  and the gate fails if a color appears in any other stylesheet.

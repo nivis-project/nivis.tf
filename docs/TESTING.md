@@ -20,6 +20,8 @@ names the thing that broke rather than reporting "the tests failed".
 | `hugo-version-single-source` | the version number appears only in `.hugo-version` | present |
 | `build`                      | the site builds with no Hugo warnings             | present |
 | `unit`                       | Hugo template assertions over fixture sites       | present |
+| `tokens`                     | the generated token stylesheet matches the briefing and the two dark rule sets agree | present |
+| `css-colors`                 | no color value outside `assets/css/tokens.css`    | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -43,6 +45,20 @@ run against a deliberate violation before being trusted.
 | `hugo-version-single-source` | a fixture tree with the version copied into a second file |
 | `build`                      | restoring the deprecated `languageCode` key, which makes Hugo warn |
 | `unit`                       | three separate probes, see below               |
+| `tokens`                     | four probes: disagreeing dark rule sets, a drifted light value, a redundant override, a missing token |
+| `css-colors`                 | a permanent negative fixture, plus blinding the scan's own pattern |
+
+### Checks that test themselves
+
+`css-colors` carries its own negative fixture at `tests/fixtures/stray-color/`,
+which contains a color in each of the five notations the rule forbids. The check
+asserts the fixture **is** caught before reporting the real tree clean, and
+asserts that the fixture's own `tokens.css` is **not** flagged, because an
+exemption that does not work is a rule that blocks legitimate work.
+
+That self-test was itself proven: blinding the scan's pattern makes the check
+report "the scan has a hole" rather than passing silently. A scan that has never
+fired is a scan nobody has tested.
 
 ### The fixture harness
 
@@ -68,6 +84,14 @@ that only ever sees passing input is a check that has never been tested.
 `unit` was proven to bite three ways: reordering the `reorder` fixture's list,
 making `code.html` lossy so the rendered text no longer matches its source, and
 making the `unknown-section` fixture resolvable so its build stops failing.
+
+A regression worth recording: when `head.html` started generating the tokens
+stylesheet, the fixtures did not mount `assets/` or `data/`, so every fixture
+failed on a nil resource. The two negative fixtures still "failed", which is
+what they are supposed to do, but for the wrong reason. The check caught it only
+because it asserts on the failure **message**, not just on the exit code. A
+negative test that checks only "did it fail" will happily pass while testing
+nothing.
 
 One probe was rejected as too weak: editing the snippet file itself does not
 trip the byte-for-byte assertion, because both sides of the comparison move

@@ -93,6 +93,22 @@
 
           hugo-version-single-source = script "hugo-version-single-source" [ pkgs.gnugrep ];
 
+          css-colors = script "css-colors" [ pkgs.gnugrep ];
+
+          tokens =
+            pkgs.runCommand "check-tokens"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pkgs.python3
+                ];
+              }
+              ''
+                cp -r ${self} src && chmod -R u+w src
+                bash src/tests/checks/tokens.sh src
+                touch "$out"
+              '';
+
           # The fixtures build real Hugo sites, which needs a writable tree.
           unit =
             pkgs.runCommand "check-unit"

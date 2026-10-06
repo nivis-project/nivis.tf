@@ -1,0 +1,35 @@
+{{- /*
+  Generated from data/tokens.yaml. Do not add a value here by hand.
+
+  Three rule sets come out of one list: the light palette unconditionally, and
+  the dark palette twice, once for an explicit choice and once for a system
+  preference with no explicit choice. The two dark sets range over the same
+  data, so they are identical by construction, and tests/checks/tokens.sh
+  proves it by parsing this file's output rather than this template.
+*/ -}}
+{{- $t := hugo.Data.tokens -}}
+:root {
+{{- range $t.colors }}
+  --{{ .name }}: {{ .light }};
+{{- end }}
+{{ range $t.type }}
+  --{{ .name }}: {{ .value }};
+{{- end }}
+{{ range $t.space }}
+  --{{ .name }}: {{ .value }};
+{{- end }}
+}
+
+:root[data-theme="dark"] {
+{{- range $t.colors }}{{ $n := .name }}{{ with .dark }}
+  --{{ $n }}: {{ . }};
+{{- end }}{{ end }}
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+{{- range $t.colors }}{{ $n := .name }}{{ with .dark }}
+    --{{ $n }}: {{ . }};
+{{- end }}{{ end }}
+  }
+}

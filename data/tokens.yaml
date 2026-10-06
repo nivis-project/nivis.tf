@@ -1,0 +1,80 @@
+# The single source for every style value on the site.
+#
+# assets/css/tokens.css renders three rule sets from this one list: the light
+# palette on :root, and the dark palette twice, once for an explicit choice and
+# once for a system preference. Generating both from here is what stops them
+# drifting; tests/checks/tokens.sh proves it by parsing the generated CSS.
+#
+# A token with no `dark:` key is identical in both themes and is emitted once.
+
+colors:
+  - { name: ground,       light: "oklch(0.975 0.008 275)", dark: "oklch(0.17 0.03 275)",  role: "page background, cards on surface" }
+  - { name: surface,      light: "oklch(0.995 0.003 275)", dark: "oklch(0.21 0.035 275)", role: "alternating section background, table" }
+  - { name: ink,          light: "oklch(0.24 0.04 275)",   dark: "oklch(0.94 0.012 275)", role: "text" }
+  - { name: muted,        light: "oklch(0.45 0.035 275)",  dark: "oklch(0.76 0.035 275)", role: "secondary text" }
+  - { name: line,         light: "oklch(0.88 0.02 275)",   dark: "oklch(0.34 0.04 275)",  role: "borders, dividers" }
+  - { name: accent,       light: "oklch(0.42 0.19 275)",   dark: "oklch(0.78 0.12 275)",  role: "links, outline button border" }
+  - { name: accent-soft,  light: "oklch(0.93 0.04 275)",   dark: "oklch(0.3 0.07 275)",   role: "highlighted table column" }
+  - { name: warm,         light: "oklch(0.8 0.14 78)",                                    role: "primary buttons, step numbers; fill only, never text" }
+  - { name: on-warm,      light: "oklch(0.17 0.03 275)",                                  role: "text on warm" }
+  - { name: code-bg,      light: "oklch(0.23 0.045 275)",  dark: "oklch(0.13 0.025 275)", role: "code block background" }
+  - { name: code-ink,     light: "oklch(0.93 0.015 275)",                                 role: "code text" }
+  - { name: code-dim,     light: "oklch(0.74 0.05 275)",                                  role: "comments, shell prompt" }
+  - { name: band-bg,      light: "oklch(0.235 0.09 275)",  dark: "oklch(0.23 0.08 275)",  role: "round-trip section background" }
+  - { name: band-ink,     light: "oklch(0.96 0.01 275)",                                  role: "text on band" }
+  - { name: band-muted,   light: "oklch(0.84 0.04 275)",                                  role: "secondary text on band" }
+  - { name: band-line,    light: "oklch(0.46 0.08 275)",                                  role: "card borders on band" }
+  - { name: band-code,    light: "oklch(0.19 0.05 275)",   dark: "oklch(0.15 0.04 275)",  role: "code block on band" }
+  - { name: mark-a,       light: "oklch(0.6 0.16 250)",    dark: "oklch(0.72 0.13 250)",  role: "mark outer layers (blue)" }
+  - { name: mark-b,       light: "oklch(0.55 0.2 305)",    dark: "oklch(0.7 0.16 305)",   role: "mark outer layers (purple)" }
+  - { name: mark-core,    light: "oklch(0.37 0.19 275)",   dark: "oklch(0.82 0.1 275)",   role: "mark core (indigo)" }
+  - { name: tok-keyword,  light: "oklch(0.8 0.13 320)",                                   role: "syntax: keywords" }
+  - { name: tok-string,   light: "oklch(0.85 0.11 160)",                                  role: "syntax: strings" }
+  - { name: tok-func,     light: "oklch(0.83 0.1 240)",                                   role: "syntax: functions, commands" }
+  - { name: tok-literal,  light: "oklch(0.85 0.12 78)",                                   role: "syntax: booleans, numbers" }
+
+type:
+  - { name: font-sans,          value: "Hind, 'Segoe UI', system-ui, sans-serif" }
+  - { name: font-mono,          value: "'IBM Plex Mono', ui-monospace, monospace" }
+  - { name: text-body,          value: "18px" }
+  - { name: leading-body,       value: "1.55" }
+  - { name: text-lead,          value: "21px" }
+  - { name: leading-lead,       value: "1.5" }
+  - { name: text-lead-band,     value: "20px" }
+  - { name: text-h1,            value: "clamp(40px, 5.6vw, 68px)" }
+  - { name: leading-h1,         value: "1.04" }
+  - { name: tracking-h1,        value: "-0.02em" }
+  - { name: text-h2,            value: "38px" }
+  - { name: leading-h2,         value: "1.15" }
+  - { name: tracking-h2,        value: "-0.015em" }
+  - { name: text-h3,            value: "24px" }
+  - { name: text-code,          value: "14.5px" }
+  - { name: leading-code,       value: "1.65" }
+  - { name: text-code-hero,     value: "15px" }
+  - { name: leading-code-hero,  value: "1.6" }
+  - { name: text-code-inline,   value: "0.86em" }
+  - { name: text-mono-label,    value: "14px" }
+  - { name: text-wordmark,      value: "34px" }
+  - { name: tracking-wordmark,  value: "-0.01em" }
+  - { name: weight-light,       value: "300" }
+  - { name: weight-regular,     value: "400" }
+  - { name: weight-medium,      value: "500" }
+  - { name: weight-semibold,    value: "600" }
+
+space:
+  - { name: width-content,      value: "1120px" }
+  - { name: pad-side,           value: "24px" }
+  - { name: pad-section,        value: "88px" }
+  - { name: pad-section-tight,  value: "80px" }
+  - { name: pad-hero-top,       value: "56px" }
+  - { name: pad-card,           value: "32px" }
+  - { name: pad-card-project,   value: "28px" }
+  - { name: pad-card-phase,     value: "24px" }
+  - { name: radius-card,        value: "14px" }
+  - { name: radius-code,        value: "10px" }
+  - { name: radius-pill,        value: "999px" }
+  - { name: space-16,           value: "16px" }
+  - { name: space-24,           value: "24px" }
+  - { name: space-32,           value: "32px" }
+  - { name: space-40,           value: "40px" }
+  - { name: space-48,           value: "48px" }

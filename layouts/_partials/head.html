@@ -4,3 +4,7 @@
 {{- with .Description }}
 <meta name="description" content="{{ . }}">
 {{- end }}
+{{- $tokensSrc := resources.Get "css/tokens.css" }}
+{{- if not $tokensSrc }}{{ errorf "assets/css/tokens.css is missing; the site cannot be styled without it" }}{{ end }}
+{{- $tokens := $tokensSrc | resources.ExecuteAsTemplate "css/tokens.css" . }}
+<link rel="stylesheet" href="{{ $tokens.RelPermalink }}">
