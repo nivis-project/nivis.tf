@@ -13,6 +13,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 REQUIRED = [
     ("link", "canonical"),
     ("meta", "og:type"),
@@ -46,7 +49,7 @@ def value_of(html, kind, name):
 
 def main():
     public = pathlib.Path(sys.argv[1])
-    html = (public / "index.html").read_text()
+    html = normalise((public / "index.html").read_text())
     errors = []
     values = {}
 
@@ -101,6 +104,12 @@ def main():
                     "the preview image still references custom properties, which a "
                     "standalone file cannot resolve"
                 )
+
+    # VACUOUS-PASS GUARD: if the tag patterns stopped matching, every lookup
+    # would return None and the "missing" errors would fire, so this check
+    # cannot pass by finding nothing. Asserted explicitly all the same.
+    if not values:
+        errors.append("no metadata tags matched at all, which means the patterns are wrong")
 
     if errors:
         for e in errors:

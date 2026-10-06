@@ -20,6 +20,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 SAMPLES = 120
 
 VARIANTS = {
@@ -77,13 +80,18 @@ def blocks(html):
 
 def main():
     root = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".")
-    html = pathlib.Path(sys.argv[2]).read_text()
+    html = normalise(pathlib.Path(sys.argv[2]).read_text())
     marks = parse_marks((root / "data" / "marks.yaml").read_text())
     if not marks:
         print("mark: FAIL could not parse data/marks.yaml", file=sys.stderr)
         return 1
 
     rendered = blocks(html)
+    # VACUOUS-PASS GUARD: with no marks matched there is nothing to compare and
+    # the check would report success having verified nothing.
+    if not rendered:
+        print("mark: FAIL no marks matched in the fixture output", file=sys.stderr)
+        return 1
     errors = []
     compared = 0
 

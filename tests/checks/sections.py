@@ -11,6 +11,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 import yaml
 
 # Each section: the data file, the path to its collection, and the pattern that
@@ -36,7 +39,7 @@ def dig(data, path):
 def main():
     public = pathlib.Path(sys.argv[1])
     root = pathlib.Path(sys.argv[2] if len(sys.argv) > 2 else ".")
-    html = (public / "index.html").read_text()
+    html = normalise((public / "index.html").read_text())
     css = "".join(p.read_text() for p in public.rglob("*.css"))
     errors = []
 

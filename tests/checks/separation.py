@@ -20,6 +20,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 # Strings a template may contain. Each entry is a hole in the rule and needs a
 # reason. It is empty: everything the page shows comes from data or i18n.
 ALLOWLIST: set[str] = set()
@@ -87,7 +90,7 @@ def scan_output(public):
     errors = []
     pages = sorted(pathlib.Path(public).rglob("*.html"))
     for page in pages:
-        html = page.read_text()
+        html = normalise(page.read_text())
         for m in re.finditer(r"<[^>]*\sstyle\s*=", html):
             line = html[: m.start()].count("\n") + 1
             errors.append(f"{page.name}:{line} has an inline style attribute")

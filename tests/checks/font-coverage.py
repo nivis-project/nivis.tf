@@ -15,6 +15,9 @@ import html
 import pathlib
 import re
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
 import unicodedata
 
 from fontTools.ttLib import TTFont
@@ -33,7 +36,7 @@ def rendered_text(page_html):
 
 def main():
     public = pathlib.Path(sys.argv[1])
-    page = (public / "index.html").read_text()
+    page = normalise((public / "index.html").read_text())
     fonts = sorted((public / "fonts").glob("*.woff2"))
     if not fonts:
         print("font-coverage: FAIL the site serves no fonts", file=sys.stderr)

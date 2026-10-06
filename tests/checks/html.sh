@@ -15,7 +15,7 @@ cd "$root"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-hugo --source . --destination "$work/public" --cacheDir "$work/c" --environment production \
+hugo --source . --destination "$work/public" --cacheDir "$work/c" --minify --environment production \
   > "$work/log" 2>&1 || { echo "html: the site did not build" >&2; cat "$work/log" >&2; exit 1; }
 
 if ! html5validator --root "$work/public" --also-check-svg > "$work/report" 2>&1; then

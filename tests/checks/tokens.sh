@@ -7,7 +7,7 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
 # Production, so this parses the bundle that actually ships, minified and all.
-hugo --source . --destination "$work/public" --cacheDir "$work/cache" --environment production \
+hugo --source . --destination "$work/public" --cacheDir "$work/cache" --minify --environment production \
   > "$work/log" 2>&1 || {
   echo "tokens: the site did not build" >&2; cat "$work/log" >&2; exit 1; }
 

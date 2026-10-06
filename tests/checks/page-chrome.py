@@ -12,6 +12,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 HEADING = re.compile(r"<h([1-6])\b", re.I)
 ID = re.compile(r"""\bid\s*=\s*["']([^"']+)["']""", re.I)
 ANCHOR = re.compile(r"""<a\b[^>]*?\bhref\s*=\s*["']#([^"']+)["']""", re.I)
@@ -21,7 +24,7 @@ def main():
     public = pathlib.Path(sys.argv[1])
     root = pathlib.Path(sys.argv[2] if len(sys.argv) > 2 else ".")
     page = public / "index.html"
-    html = page.read_text()
+    html = normalise(page.read_text())
     errors = []
 
     ranks = [int(m.group(1)) for m in HEADING.finditer(html)]

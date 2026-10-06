@@ -17,6 +17,9 @@ sandboxed check proves a URL resolves would be the dishonest option.
 import pathlib
 import re
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
 from urllib.parse import urlparse
 
 # Hosts this site is allowed to link to. A new one is a deliberate decision.
@@ -25,7 +28,7 @@ ALLOWED_HOSTS = {"github.com", "nivis.tf"}
 
 def main():
     public = pathlib.Path(sys.argv[1])
-    html = (public / "index.html").read_text()
+    html = normalise((public / "index.html").read_text())
     errors = []
 
     external = set()

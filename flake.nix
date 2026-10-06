@@ -358,7 +358,9 @@
               ''
                 ${stageSrc}
                 cd src
-                hugo --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache" \
+                # --minify, because that is what amplify.yml deploys. Testing
+                # the unminified page means testing an artifact nobody serves.
+                hugo --minify --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache" \
                   --environment production > "$TMPDIR/build.log" 2>&1 \
                   || { cat "$TMPDIR/build.log" >&2; exit 1; }
                 export SITE_DIR="$TMPDIR/public"
@@ -544,7 +546,7 @@
               set -euo pipefail
               out=$(mktemp -d)
               trap 'rm -rf "$out"' EXIT
-              ${pkgs.hugo}/bin/hugo --destination "$out/public" --environment production >/dev/null
+              ${pkgs.hugo}/bin/hugo --minify --destination "$out/public" --environment production >/dev/null
               echo "==> resolving every link in the built site"
               ${pkgs.lychee}/bin/lychee --no-progress --include-fragments "$out/public"
             ''

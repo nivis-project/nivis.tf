@@ -12,6 +12,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 SRC = re.compile(r"""\bsrc\s*=\s*["']([^"']+)["']""", re.I)
 LINK_TAG = re.compile(r"<link\b[^>]*>", re.I)
 
@@ -49,7 +52,7 @@ def main():
         return 1
 
     for page in html_files:
-        text = page.read_text()
+        text = normalise(page.read_text())
         rel = page.relative_to(public)
         errors += offenders(SRC.findall(text), f"{rel} (src)")
         for tag in LINK_TAG.findall(text):

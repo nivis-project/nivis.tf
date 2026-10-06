@@ -13,11 +13,21 @@
 set -euo pipefail
 root="${1:-.}"
 cd "$root"
+ROOT_DIR="$(pwd)"
+
+# The minifier drops quotes around single-token attribute values, so grep
+# patterns written against readable markup silently stop matching. Normalise
+# every built page before inspecting it. See tests/checks/htmlnorm.py.
+norm() { for f in $(find "$1" -name '*.html'); do
+  python3 "$ROOT_DIR/tests/checks/htmlnorm.py" < "$f" > "$f.n" && mv "$f.n" "$f"
+done; }
+
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-hugo --source . --destination "$work/before" --cacheDir "$work/c" --environment production \
+hugo --source . --destination "$work/before" --cacheDir "$work/c" --minify --environment production \
   > "$work/log" 2>&1 || { echo "acceptance: the site did not build" >&2; cat "$work/log" >&2; exit 1; }
+norm "$work/before"
 before_cards="$(grep -c 'class="project-card"' "$work/before/index.html" || true)"
 
 cp -r . "$work/added"
@@ -39,9 +49,10 @@ m["acceptance-probe"] = {"k": 6, "amp": 1.3, "rot": 30}
 marks.write_text(yaml.safe_dump(m, sort_keys=False, allow_unicode=True))
 PY
 
-hugo --source "$work/added" --destination "$work/after" --cacheDir "$work/c" --environment production \
+hugo --source "$work/added" --destination "$work/after" --cacheDir "$work/c" --minify --environment production \
   > "$work/added.log" 2>&1 || {
     echo "acceptance: adding a project broke the build" >&2; cat "$work/added.log" >&2; exit 1; }
+norm "$work/after"
 
 after_cards="$(grep -c 'class="project-card"' "$work/after/index.html" || true)"
 if [ "$after_cards" -ne "$((before_cards + 1))" ]; then

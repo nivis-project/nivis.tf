@@ -14,11 +14,14 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 
 def main():
     public = pathlib.Path(sys.argv[1])
     root = pathlib.Path(sys.argv[2] if len(sys.argv) > 2 else ".")
-    html = (public / "index.html").read_text()
+    html = normalise((public / "index.html").read_text())
     errors = []
 
     head = html.split("</head>", 1)[0]

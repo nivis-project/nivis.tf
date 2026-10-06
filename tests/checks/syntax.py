@@ -9,6 +9,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 # What each language's samples must produce. Measured from the real output, not
 # transcribed from a published list.
 EXPECTED = {
@@ -29,11 +32,13 @@ MAPPING = {
 
 def main():
     public = pathlib.Path(sys.argv[1])
-    html = (public / "index.html").read_text()
+    html = normalise((public / "index.html").read_text())
     css = "".join(p.read_text() for p in public.rglob("*.css"))
     errors = []
 
     blocks = re.findall(r'<code[^>]*data-lang="([a-z]+)"[^>]*>(.*?)</code>', html, re.S)
+    # VACUOUS-PASS GUARD. A pattern that matches nothing reports no violations
+    # and passes. Every count-based check here asserts it found something.
     if not blocks:
         print("syntax: FAIL no highlighted code blocks on the page", file=sys.stderr)
         return 1

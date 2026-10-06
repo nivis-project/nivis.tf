@@ -18,6 +18,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from htmlnorm import normalise
+
 # The briefing's section 11, each item mapped to what proves it. "manual" means
 # a person has to look; the check reports those as outstanding rather than
 # letting a silent pass imply they were verified.
@@ -49,7 +52,7 @@ def rendered_snippets(page_html):
 def main():
     public = pathlib.Path(sys.argv[1])
     root = pathlib.Path(sys.argv[2] if len(sys.argv) > 2 else ".")
-    page = (public / "index.html").read_text()
+    page = normalise((public / "index.html").read_text())
     errors = []
     notes = []
 

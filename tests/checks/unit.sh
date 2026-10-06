@@ -12,6 +12,15 @@ set -euo pipefail
 
 root="${1:-.}"
 cd "$root"
+ROOT_DIR="$(pwd)"
+
+# The minifier drops quotes around single-token attribute values, so grep
+# patterns written against readable markup silently stop matching. Normalise
+# every built page before inspecting it. See tests/checks/htmlnorm.py.
+norm() { for f in $(find "$1" -name '*.html'); do
+  python3 "$ROOT_DIR/tests/checks/htmlnorm.py" < "$f" > "$f.n" && mv "$f.n" "$f"
+done; }
+
 fixtures="tests/fixtures"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
@@ -22,18 +31,19 @@ fail() { printf 'unit: FAIL %s\n' "$1" >&2; failed=1; }
 
 build_ok() {
   local name="$1"
-  if ! hugo --source "$fixtures/$name" --destination "$work/$name" \
+  if ! hugo --source "$fixtures/$name" --destination "$work/$name" --minify \
        --cacheDir "$work/cache" > "$work/$name.log" 2>&1; then
     fail "$name: expected the fixture to build, but it did not"
     sed 's/^/    /' "$work/$name.log" >&2
     return 1
   fi
+  norm "$work/$name"
   return 0
 }
 
 build_must_fail() {
   local name="$1" expect="$2"
-  if hugo --source "$fixtures/$name" --destination "$work/$name" \
+  if hugo --source "$fixtures/$name" --destination "$work/$name" --minify \
      --cacheDir "$work/cache" > "$work/$name.log" 2>&1; then
     fail "$name: expected the build to FAIL, but it succeeded"
     return 1
@@ -113,8 +123,9 @@ if build_ok links; then
   tmp="$work/rebased"
   cp -r . "$tmp" 2>/dev/null || true
   sed -i 's|^docs_base:.*|docs_base: https://moved.example/docs|' "$tmp/data/site.yaml"
-  if hugo --source "$tmp/$fixtures/links" --destination "$work/links-rebased" \
+  if hugo --source "$tmp/$fixtures/links" --destination "$work/links-rebased" --minify \
        --cacheDir "$work/cache" > "$work/links-rebased.log" 2>&1; then
+    norm "$work/links-rebased"
     moved="$(sed -n 's|.*id="real">\([^<]*\)<.*|\1|p' "$work/links-rebased/index.html")"
     if [ "$moved" = "https://moved.example/docs/INSTALL.md" ]; then
       note "ok: changing docs_base in one place moves every doc link"

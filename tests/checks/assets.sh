@@ -6,22 +6,25 @@ cd "$root"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-hugo --source . --destination "$work/public" --cacheDir "$work/c" --environment production \
+hugo --source . --destination "$work/public" --cacheDir "$work/c" --minify --environment production \
   > "$work/log" 2>&1 || { echo "assets: the site did not build" >&2; cat "$work/log" >&2; exit 1; }
 pub="$work/public"
 
 # Exactly one stylesheet, fingerprinted.
-sheets="$(grep -o 'rel="stylesheet" href="[^"]*"' "$pub/index.html" | wc -l)"
+# The minifier strips attribute quotes, so patterns must tolerate both forms.
+# This check used to build without --minify and so had only ever seen quoted
+# markup, which is not what deploys.
+sheets="$(grep -oE 'rel="?stylesheet"?[^>]*href="?[^ ">]+' "$pub/index.html" | wc -l)"
 if [ "$sheets" -ne 1 ]; then
   echo "assets: the page references $sheets stylesheets, expected exactly 1" >&2
   exit 1
 fi
-href="$(sed -n 's/.*rel="stylesheet" href="\([^"]*\)".*/\1/p' "$pub/index.html")"
+href="$(grep -oE 'rel="?stylesheet"?[^>]*href="?[^ ">]+' "$pub/index.html" | sed 's/.*href="\?//')"
 if ! printf '%s' "$href" | grep -qE '\.[0-9a-f]{64}\.css$'; then
   echo "assets: the stylesheet name carries no content digest: $href" >&2
   exit 1
 fi
-if ! grep -q 'integrity="sha256-' "$pub/index.html"; then
+if ! grep -qE 'integrity="?sha256-' "$pub/index.html"; then
   echo "assets: the stylesheet has no integrity attribute" >&2
   exit 1
 fi

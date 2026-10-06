@@ -313,6 +313,45 @@ anywhere in `amplify.yml`, including **in a comment**, so a config that merely
 mentioned the file while hardcoding a version would have passed. It now requires
 a command that reads it.
 
+### The gate must inspect what deploys, and must not pass by finding nothing
+
+The sharpest lesson in this project, found after it was declared finished.
+
+`amplify.yml` deploys with `hugo --minify`. Eleven checks built without it. The
+minifier drops quotes around an attribute value with no space, so
+`class="project-card"` becomes `class=project-card` while
+`class="card stack audience-card"` survives. Patterns written against readable
+markup matched nothing on the real page.
+
+**`links.py` found zero external links.** Zero links, zero violations, pass. It
+failed only because it carried one line added almost as an afterthought:
+
+    if not external:
+        errors.append("the page has no external links at all, which cannot be right")
+
+Without it, the check whose entire job is validating links would have reported
+*"ok, 0 external links, all https"* on every run, forever.
+
+Three rules came out of it:
+
+1. **Build what deploys.** Every check now uses the deployment's options,
+   fixtures included, so there is no convenient dialect for tests.
+2. **Normalise once.** `tests/checks/htmlnorm.py` re-quotes attribute values, so
+   checks read the deployed bytes but see one form. Teaching twenty patterns
+   both spellings would mean missing one, silently.
+3. **A check that finds nothing fails.** Count-based checks assert they found
+   what they expected. Guards are labelled `VACUOUS-PASS GUARD`.
+
+This is sharper than the negative-fixture rule elsewhere in this document.
+A negative fixture proves a check **can** fail. It does not prove the check is
+**looking at anything**, because the fixture and the real artifact can be
+different dialects. Both are needed.
+
+A fourth, process rule: applying the normaliser I wrote the affected list by
+hand and omitted `links.py`, the very file whose failure exposed the problem.
+The audit is now derived from the checks themselves. Anything hand-maintained
+eventually disagrees with reality.
+
 ### The dominant failure mode: correct pieces, wrong composition
 
 Four defects in this project shared one shape. Each component was correct in its

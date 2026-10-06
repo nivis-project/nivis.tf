@@ -5,11 +5,11 @@ status: completed
 type: epic
 priority: critical
 created_at: 2026-10-06T13:02:11Z
-updated_at: 2026-10-06T15:12:57Z
+updated_at: 2026-10-06T15:26:48Z
 parent: nivistf-cpt6
 blocked_by:
     - nivistf-gwla
-openspec-link: openspec/changes/archive/2026-10-06-test-harness-completion
+openspec-link: openspec/changes/archive/2026-10-06-check-the-deployed-artifact
 ---
 
 The gate every later change passes through. Build this before there is a site
@@ -95,3 +95,45 @@ cascade on code blocks, the `hidden` attribute beaten by an author `display`,
 the oklch serialisation in a test helper, and the inline-versus-standalone SVG.
 None was caught by reading source; every one was caught by running the real
 artifact through a real tool.
+
+## Addendum: the gate was checking an artifact that is never deployed
+
+Shipped as OpenSpec change `check-the-deployed-artifact`, found AFTER the
+project was declared finished.
+
+`amplify.yml` deploys with `hugo --minify`. Eleven checks built without it. The
+minifier drops quotes around an attribute value containing no space, so
+`class="project-card"` became `class=project-card` while
+`class="card stack audience-card"` survived. Patterns written against readable
+markup matched nothing on the real page.
+
+`links.py` found ZERO external links and would have reported "ok, 0 external
+links, all https" on every run forever. It failed only because of one line added
+almost as an afterthought:
+
+    if not external:
+        errors.append("the page has no external links at all, which cannot be right")
+
+Only `assets` and `acceptance` failed loudly. The rest would have stayed green,
+some asserting against zero matched elements.
+
+How it was found: an ad hoc inspection of `nix build` printed `code: 0` and
+`table rows: 0`. The easy explanation was a bad regex in the throwaway command.
+The byte count had also moved, 69,883 to 57,764. Two unexplained numbers in one
+place is a signal, and chasing the second found the first.
+
+Three rules now in docs/TESTING.md:
+
+1. Build what deploys, fixtures included, so there is no convenient dialect for
+   tests.
+2. Normalise once (`tests/checks/htmlnorm.py`) rather than teaching twenty
+   patterns both spellings, where missing one is silent.
+3. A check that finds nothing fails. Guards are labelled VACUOUS-PASS GUARD.
+
+This is sharper than the negative-fixture rule I had already written. A negative
+fixture proves a check CAN fail; it does not prove the check is LOOKING at
+anything, because the fixture and the real artifact can be different dialects.
+
+A fourth, about my own process: applying the normaliser I wrote the affected
+list by hand and omitted links.py, the very file whose failure exposed the
+problem. The audit is now derived from the checks themselves.

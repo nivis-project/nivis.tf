@@ -2,10 +2,20 @@
 set -euo pipefail
 root="${1:-.}"
 cd "$root"
+ROOT_DIR="$(pwd)"
+
+# The minifier drops quotes around single-token attribute values, so grep
+# patterns written against readable markup silently stop matching. Normalise
+# every built page before inspecting it. See tests/checks/htmlnorm.py.
+norm() { for f in $(find "$1" -name '*.html'); do
+  python3 "$ROOT_DIR/tests/checks/htmlnorm.py" < "$f" > "$f.n" && mv "$f.n" "$f"
+done; }
+
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-hugo --source . --destination "$work/public" --cacheDir "$work/c" --environment production \
+hugo --source . --destination "$work/public" --cacheDir "$work/c" --minify --environment production \
   > "$work/log" 2>&1 || { echo "sections: the site did not build" >&2; cat "$work/log" >&2; exit 1; }
+norm "$work/public"
 python3 tests/checks/sections.py "$work/public" .
 
 # Step numbers must follow POSITION, not the item. Build again from reordered
@@ -19,8 +29,9 @@ d = yaml.safe_load(p.read_text())
 d["steps"] = list(reversed(d["steps"]))
 p.write_text(yaml.safe_dump(d, sort_keys=False, allow_unicode=True))
 PY
-hugo --source "$work/reordered" --destination "$work/rev" --cacheDir "$work/c" --environment production \
+hugo --source "$work/reordered" --destination "$work/rev" --cacheDir "$work/c" --minify --environment production \
   > "$work/rev.log" 2>&1 || { echo "sections: the reordered build failed" >&2; cat "$work/rev.log" >&2; exit 1; }
+norm "$work/rev"
 
 first_before="$(grep -o 'class="step"[^|]*' "$work/public/index.html" | head -1)"
 titles_before="$(grep -oP '(?<=<h3>)[^<]+' "$work/public/index.html" | tail -n +3 | head -4 | tr '\n' '|')"
@@ -51,8 +62,9 @@ for tool in d["tools"]:
 d["tools"][3]["highlight"] = True          # NixOps 4, deliberately not first
 p.write_text(yaml.safe_dump(d, sort_keys=False, allow_unicode=True))
 PY
-hugo --source "$work/reflagged" --destination "$work/flag" --cacheDir "$work/c" --environment production \
+hugo --source "$work/reflagged" --destination "$work/flag" --cacheDir "$work/c" --minify --environment production \
   > "$work/flag.log" 2>&1 || { echo "sections: the reflagged build failed" >&2; cat "$work/flag.log" >&2; exit 1; }
+norm "$work/flag"
 
 # The header cell carrying the distinction must now be the fourth tool.
 subject_header="$(grep -oP '(?<=<th scope="col" class="is-subject">)[^<]+' "$work/flag/index.html" | head -1)"

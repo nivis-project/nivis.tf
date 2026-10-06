@@ -81,6 +81,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Eleven checks inspected a build that is never deployed, because they omitted
+  the minification the deployment uses. One of them, the link checker, was
+  matching nothing at all and would have passed indefinitely while verifying
+  nothing. The site itself was unaffected; the defect was in the verification.
+
 - Code samples rendered on the page background instead of their own dark one,
   at a contrast ratio of 1.14 to 1. A transparent-background rule intended for
   Chroma's line wrappers also matched the code block itself and outranked it.
