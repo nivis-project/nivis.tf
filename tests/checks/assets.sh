@@ -28,7 +28,7 @@ fi
 echo "assets: one fingerprinted stylesheet with integrity"
 
 # Exactly the weights the design uses, and no others.
-want="Hind-Light.woff2 Hind-Medium.woff2 Hind-Regular.woff2 Hind-SemiBold.woff2 IBMPlexMono-Medium.woff2 IBMPlexMono-Regular.woff2"
+want="Hind-Medium.woff2 Hind-Regular.woff2 Hind-SemiBold.woff2 IBMPlexMono-Medium.woff2 IBMPlexMono-Regular.woff2"
 got="$(cd "$pub/fonts" 2>/dev/null && ls *.woff2 2>/dev/null | sort | tr '\n' ' ' | sed 's/ $//')"
 want_sorted="$(printf '%s\n' $want | sort | tr '\n' ' ' | sed 's/ $//')"
 if [ "$got" != "$want_sorted" ]; then

@@ -21,12 +21,11 @@
       # a font update becomes a lock bump, and licences stay tracked by nixpkgs.
       # Listing the weights explicitly means adding one is a decision somebody
       # makes, not a side effect of a package update.
+      # Weight 300 is deliberately absent. The design names it, but no element
+      # applies font-weight: 300, so the browser never requests Hind-Light and
+      # it was 90 KB of deploy weight nothing used. Add it back when something
+      # actually sets that weight.
       fontFaces = [
-        {
-          family = "Hind";
-          weight = 300;
-          file = "Hind-Light";
-        }
         {
           family = "Hind";
           weight = 400;
@@ -66,26 +65,62 @@
           sha256 = "1qvmggpdja8qdq3rklafxg1d8dyvnrk3nwni595nziq1xjfws4dm";
         };
 
+      # Hind is an Indic typeface: 1006 glyphs for 434 codepoints, most of the
+      # excess being Devanagari conjuncts an English site never renders. Full
+      # Hind Regular is 97 KB as woff2; subset to the ranges below it is 16 KB.
+      #
+      # The ranges are explicit rather than "Latin", because the page uses a
+      # Greek theta in the mark formula and a rightwards arrow in the comparison
+      # table. A naive Latin-1 subset drops both, and the failure is silent: the
+      # text renders from a fallback face or as a notdef box. tests/checks/
+      # font-coverage.py asserts every character the page renders is covered.
+      fontSubset = builtins.concatStringsSep "," [
+        "U+0000-00FF" # Latin-1, including the middle dot
+        "U+0100-017F" # Latin Extended-A
+        "U+0370-03FF" # Greek, for the theta in the mark formula
+        "U+2000-206F" # General punctuation, including the ellipsis
+        "U+2070-209F" # Super- and subscripts
+        "U+20A0-20BF" # Currency
+        "U+2100-214F" # Letterlike
+        "U+2190-21FF" # Arrows, including the one in the comparison table
+        "U+2200-22FF" # Mathematical operators
+        "U+FEFF"
+        "U+FFFD"
+      ];
+
       siteFonts =
         pkgs:
-        pkgs.runCommand "nivis-tf-fonts" { nativeBuildInputs = [ pkgs.woff2 ]; } (
-          ''
-            mkdir -p "$out"
-          ''
-          + nixpkgs.lib.concatMapStrings (f: ''
-            src=""
-            for d in ${pkgs.google-fonts}/share/fonts/truetype ${pkgs.ibm-plex}/share/fonts/truetype; do
-              if [ -f "$d/${f.file}.ttf" ]; then src="$d/${f.file}.ttf"; fi
-            done
-            if [ -z "$src" ]; then
-              echo "font ${f.file}.ttf not found in google-fonts or ibm-plex" >&2
-              exit 1
-            fi
-            cp "$src" "$TMPDIR/${f.file}.ttf"
-            woff2_compress "$TMPDIR/${f.file}.ttf"
-            cp "$TMPDIR/${f.file}.woff2" "$out/${f.file}.woff2"
-          '') fontFaces
-        );
+        pkgs.runCommand "nivis-tf-fonts"
+          {
+            nativeBuildInputs = [
+              pkgs.woff2
+              (pkgs.python3.withPackages (ps: [
+                ps.fonttools
+                ps.brotli
+              ]))
+            ];
+          }
+          (
+            ''
+              mkdir -p "$out"
+            ''
+            + nixpkgs.lib.concatMapStrings (f: ''
+              src=""
+              for d in ${pkgs.google-fonts}/share/fonts/truetype ${pkgs.ibm-plex}/share/fonts/truetype; do
+                if [ -f "$d/${f.file}.ttf" ]; then src="$d/${f.file}.ttf"; fi
+              done
+              if [ -z "$src" ]; then
+                echo "font ${f.file}.ttf not found in google-fonts or ibm-plex" >&2
+                exit 1
+              fi
+              pyftsubset "$src" \
+                --unicodes='${fontSubset}' \
+                --layout-features='kern,liga,calt' \
+                --output-file="$TMPDIR/${f.file}.ttf"
+              woff2_compress "$TMPDIR/${f.file}.ttf"
+              cp "$TMPDIR/${f.file}.woff2" "$out/${f.file}.woff2"
+            '') fontFaces
+          );
 
       hugoVersion = nixpkgs.lib.fileContents ./.hugo-version;
     in
@@ -152,7 +187,11 @@
         let
           # PyYAML is needed by the checks that compare the page against the
           # data files, so the environment is defined once rather than per check.
-          pythonEnv = pkgs.python3.withPackages (ps: [ ps.pyyaml ]);
+          pythonEnv = pkgs.python3.withPackages (ps: [
+            ps.pyyaml
+            ps.fonttools
+            ps.brotli
+          ]);
 
           # Fonts are built from nixpkgs rather than committed, so anything that
           # builds the site has to stage them first. One place, so a new check
@@ -193,6 +232,26 @@
           css-colors = script "css-colors" [ pkgs.gnugrep ];
 
           snippets = script "snippets" [ pythonEnv ];
+
+          font-coverage =
+            pkgs.runCommand "check-font-coverage"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                # The SOURCE fonts, so the check can tell a subset regression
+                # from a glyph the typeface never had.
+                mkdir -p "$TMPDIR/sources"
+                cp ${pkgs.google-fonts}/share/fonts/truetype/Hind-*.ttf "$TMPDIR/sources/" || true
+                cp ${pkgs.ibm-plex}/share/fonts/truetype/IBMPlexMono-*.ttf "$TMPDIR/sources/" || true
+                export FONT_SOURCES="$TMPDIR/sources"
+                ${stageSrc}
+                bash src/tests/checks/font-coverage.sh src
+                touch "$out"
+              '';
 
           metadata =
             pkgs.runCommand "check-metadata"

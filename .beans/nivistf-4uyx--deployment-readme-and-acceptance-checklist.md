@@ -1,11 +1,11 @@
 ---
 # nivistf-4uyx
 title: Deployment, README and acceptance checklist
-status: todo
+status: in-progress
 type: epic
 priority: normal
 created_at: 2026-10-06T13:02:12Z
-updated_at: 2026-10-06T13:02:41Z
+updated_at: 2026-10-06T15:02:52Z
 parent: nivistf-wrli
 blocked_by:
     - nivistf-c6h5

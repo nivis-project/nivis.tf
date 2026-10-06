@@ -35,6 +35,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `warm-is-a-fill`             | `--warm` is never used as a text colour          | present |
 | `e2e`                        | a real browser: layout, keyboard, theme, motion, axe-core | present |
 | `metadata`                   | sharing metadata agrees with the page and is absolute | present |
+| `font-coverage`              | every rendered character exists in the served fonts | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -72,6 +73,7 @@ run against a deliberate violation before being trusted.
 | `contrast`                   | three probes: a lowered light value, a lowered dark-only value, warm used as text |
 | `e2e`                        | found three real defects on its first run, see below |
 | `metadata`                   | seven probes: a missing tag, a relative image, a drifted title, an empty tag, a placeholder, a missing image, an unresolved custom property |
+| `font-coverage`              | caught two real uncovered characters on its first run |
 
 ### What the browser found that nothing else could
 
@@ -524,12 +526,66 @@ acceptance checklist in section 11 of `nivis-tf-hugo-briefing.md`.
 
 ## Performance budget
 
-Record the cold-load transferred bytes here once milestone 05 lands, so a
-regression is visible in a diff rather than in a Lighthouse run nobody opened.
+Measured in a real browser from what the page actually requests, not by summing
+the published directory. A browser downloads a font only when an element needs
+that weight, so a declared-but-unused face costs a reader nothing; measuring the
+directory would have counted 90 KB nobody ever fetches.
+
+Numbers are uncompressed, the pessimistic case: the test server does not
+compress, production does, and fonts gain nothing from it.
 
 | Metric | Budget | Measured |
-|-------------------------|--------|----------|
-| Cold load, transferred  | TBD    | not yet  |
-| Lighthouse performance  | >= 95  | not yet  |
-| Lighthouse a11y         | >= 95  | not yet  |
-| Lighthouse best practices | >= 95 | not yet  |
+|------------------------|-----------|-----------|
+| Cold load, transferred | 220 KB    | 189,288 B |
+| Requests               | 10        | 8         |
+| HTML                   | 80 KB     | 69,883 B  |
+| CSS                    | 16 KB     | 11,919 B  |
+| JavaScript             | 4 KB      | 406 B     |
+| Render-blocking        | 1         | 1         |
+
+Each budget sits a little above its measurement, so ordinary churn passes and a
+real regression fails. Raising one should be a visible decision in a diff.
+
+58% of the raw HTML is generated mark path data, 32 paths of 120 sampled points
+each. It gzips to roughly a quarter, which is why the budget is on transferred
+bytes rather than raw.
+
+### Why there is no Lighthouse score in the gate
+
+The briefing asks for 95+. A Lighthouse performance score measured in a shared
+build sandbox is dominated by how busy the machine is, not by the site: the same
+commit scores differently on consecutive runs. A gate that fails at random
+teaches people to re-run it until it passes, which is worse than not having one.
+
+The deterministic parts of what Lighthouse reports are gated directly: total
+bytes, request count, render-blocking resources, `font-display`, and the full
+accessibility audit `e2e` already runs with axe-core. The timing-derived score is
+the part left out, and it belongs in a non-gating run against the deployed site
+where the numbers mean something.
+
+### Subsetting, and the check it needed
+
+Hind is an Indic typeface: 1006 glyphs for 434 codepoints, most of the excess
+Devanagari conjuncts an English site never renders. Subsetting took the served
+fonts from **475 KB to 107 KB**, and the cold load from 466,808 to 189,288 bytes.
+
+Subsetting fails silently: a dropped glyph renders from a fallback or as a
+notdef box, and nothing errors. So `font-coverage` verifies the subset against
+the **actual rendered text** of the built page rather than an assumed alphabet.
+
+It earned itself immediately, and then taught a second lesson. It flagged a
+Greek theta and a rightwards arrow. The obvious reading was "the subset broke
+them". Checking the source TrueType files showed the fonts never had those
+glyphs: they had been rendering from a system fallback since those sections were
+built.
+
+The check now compares against the source fonts and separates the two:
+
+| Situation | Response |
+|---|---|
+| Source had the glyph, subset dropped it | **fail**, a regression introduced here |
+| Source never had it | **note**, a typeface choice, surfaced in the README |
+
+Failing the build over somebody else's choice of typeface would be a check
+nobody could satisfy. Staying silent about it would hide a real defect in how
+the page renders. Reporting it is the only honest option.

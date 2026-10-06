@@ -65,6 +65,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   metadata, with a preview image generated from the mark, so a shared link
   shows what the page is.
 
+- The fonts are subset to what the site can actually render, cutting a first
+  visit from 467 KB to 189 KB. A weight no rule applied is no longer served.
+
 ### Fixed
 
 - Code samples rendered on the page background instead of their own dark one,
