@@ -456,11 +456,37 @@ declaration, not part of a longer identifier. Re-probed in both directions, five
 real colour notations still caught, and `white-space`, `.greenish-name`,
 `var(--ink)` and `transparent` all correctly clean.
 
+### The minifier rewrites path data four ways
+
+The mark check used to compare rendered path strings. That only worked because
+it had never run against minified output. Hugo's minifier rewrites path data in
+four distinct ways, each of which defeats a string comparison and the first
+three of which defeat a naive number scan:
+
+| Rewriting | Example |
+|---|---|
+| Separators dropped | `M-154.7 0.0` becomes `M-154.7.0`, valid because a second decimal point starts a new number |
+| Absolute to relative | `L147 -65.5` becomes `l-5-7.1` |
+| Axis shorthands | a segment moving in one axis becomes `V0` or `H70` |
+| Scientific notation | `-100` becomes `-1e2` |
+
+So the check now **interprets** the path: it applies the commands, accumulates
+relative positions, and compares absolute rounded coordinates. The guarantee is
+the same, the comparison is on what ships, and each of the four took its own
+round of debugging to find.
+
 ### Why the mark check reimplements the formula
 
-`tests/checks/mark.py` evaluates `r(theta) = a + b * cos(k * theta)` in Python
-from the briefing's formula, and compares every one of the 120 points of every
-layer of every mark against Hugo's output. 9 marks, 31 layers, 3720 points.
+`tests/checks/mark.py` evaluates `h(theta) = A + cos(3*theta)` in Python from the
+brand brief's formula, derives the nesting scale the same way, and compares every
+point of every copy of every mark against Hugo's output. 5 marks, 21 copies,
+2541 points.
+
+It also asserts the series actually **nests**: each copy's extent must be within
+its predecessor's. And the build rejects a fit above 0.2, where the exponent
+`1 - 5*fit` reaches zero, the scale exceeds one, and each copy would be drawn
+larger than its parent. That bound is a property of the formula, not a
+preference.
 
 Reusing anything from the template would make this circular. Two independent
 implementations of the same formula agreeing is evidence; one implementation

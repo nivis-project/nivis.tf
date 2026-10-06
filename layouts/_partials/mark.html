@@ -1,69 +1,61 @@
 {{- /*
-  Generates a mark from data/marks.yaml at build time.
+  The Nivis mark: nested self-similar copies of one curve.
 
-  Every layer is the polar curve r(t) = a + b*cos(k*t), with b = a*amp/(k^2+1),
-  sampled at 120 points, rotated, and closed, in a -100 -100 200 200 viewBox.
-  See section 7 of the briefing. The generator in nivis-mockup-reference.html is
-  the reference implementation; tests/checks/mark.py reimplements the formula
-  independently and compares every point.
+    h(theta) = A + B*cos(3*theta),  B fixed at 1, so only the ratio A/B varies
+    copy i is rotated by i*phi and scaled by step^i
+    step = perfectFit(A, phi) ^ (1 - 5*fit)
 
-  Arguments: name, variant (full|project|footer), size, alt (optional).
-  Fills are custom properties so the whole family recolours in one edit.
+  Each copy therefore sits inside the one before it, and rotating the series
+  also changes how tightly it nests, because step depends on phi.
 
-  The layer sets live here, not in the data: the data answers "what shape is
-  this mark", the variant answers "how much of it does this spot on the page
-  show". Those change for different reasons.
+  Colours come from var(--mark-<copies>-<i>), generated in tokens.css from the
+  span in data/tokens.yaml. No colour value is written here.
+
+  Arguments: name, copies (optional, defaults to the mark's own), size, alt.
 */ -}}
 {{- $name := .name -}}
-{{- $variant := .variant | default "full" -}}
-{{- $size := .size -}}
-{{- $alt := .alt -}}
 {{- $marks := hugo.Data.marks -}}
 {{- $p := index $marks $name -}}
 {{- if not $p -}}
 {{- errorf "mark %q has no parameters in data/marks.yaml" $name -}}
 {{- end -}}
-{{- $k := $p.k -}}
-{{- $amp := $p.amp -}}
-{{- $rot := $p.rot -}}
+{{- $a := float $p.ratio -}}
+{{- $copies := int (default $p.copies .copies) -}}
+{{- $fit := float $p.fit -}}
+{{- $phi := mul (float $p.rot) (div math.Pi 180.0) -}}
 
-{{- $layers := slice -}}
-{{- if eq $variant "full" -}}
-  {{- $layers = slice
-      (dict "a" 84.0 "rot" (add $rot -24.0) "fill" "mark-a"    "op" "0.3")
-      (dict "a" 80.0 "rot" (add $rot -11.0) "fill" "mark-b"    "op" "0.3")
-      (dict "a" 78.0 "rot" (add $rot  12.0) "fill" "mark-a"    "op" "0.3")
-      (dict "a" 74.0 "rot" (add $rot  25.0) "fill" "mark-b"    "op" "0.3")
-      (dict "a" 64.0 "rot" $rot             "fill" "mark-core" "op" "1") -}}
-{{- else if eq $variant "footer" -}}
-  {{- $layers = slice
-      (dict "a" 80.0 "rot" (add $rot -11.0) "fill" "mark-b"    "op" "0.3")
-      (dict "a" 78.0 "rot" (add $rot  12.0) "fill" "mark-a"    "op" "0.3")
-      (dict "a" 64.0 "rot" $rot             "fill" "mark-core" "op" "1") -}}
-{{- else if eq $variant "project" -}}
-  {{- $layers = slice
-      (dict "a" 84.0 "rot" (add $rot -16.0) "fill" "mark-a"    "op" "0.35")
-      (dict "a" 80.0 "rot" (add $rot  16.0) "fill" "mark-b"    "op" "0.35")
-      (dict "a" 64.0 "rot" $rot             "fill" "mark-core" "op" "1") -}}
-{{- else -}}
-  {{- errorf "mark variant %q is not one of full, project, footer" $variant -}}
+{{- /* step > 1 turns the nesting inside out: each copy would be drawn larger
+       than its parent. The exponent (1 - 5*fit) reaches zero at fit = 0.2, so
+       that is the bound, and it is a property of the formula rather than a
+       preference. */ -}}
+{{- if gt $fit 0.2 -}}
+{{- errorf "mark %q has fit %v; above 0.2 the nesting inverts because step exceeds 1" $name $fit -}}
+{{- end -}}
+{{- if lt $copies 2 -}}
+{{- errorf "mark %q draws %v copies; a nested series needs at least 2" $name $copies -}}
+{{- end -}}
+{{- $max := int hugo.Data.tokens.mark_span.max_copies -}}
+{{- if gt $copies $max -}}
+{{- errorf "mark %q draws %v copies, but only %v colour steps are generated" $name $copies $max -}}
 {{- end -}}
 
-<svg viewBox="-100 -100 200 200"
-  {{- with $size }} width="{{ . }}" height="{{ . }}"{{ end }}
-  {{- if $alt }} role="img" aria-label="{{ $alt }}"{{ else }} aria-hidden="true"{{ end }}>
-{{- range $layers }}
-{{- $a := .a -}}
-{{- $b := div (mul $a $amp) (add (mul $k $k) 1) -}}
-{{- $r0 := mul .rot (div math.Pi 180.0) -}}
+{{- $pf := partial "mark-fit.html" (dict "a" $a "phi" $phi) -}}
+{{- $step := math.Pow $pf (sub 1.0 (mul 5.0 $fit)) -}}
+{{- $scale := div 170.0 (add $a 1.0) -}}
+<svg viewBox="-200 -200 400 400"
+  {{- with .size }} width="{{ . }}" height="{{ . }}"{{ end }}
+  {{- if .alt }} role="img" aria-label="{{ .alt }}"{{ else }} aria-hidden="true"{{ end }}>
+{{- range $i := seq 0 (sub $copies 1) -}}
+{{- $rot := mul $phi (float $i) -}}
+{{- $s := mul $scale (math.Pow $step (float $i)) -}}
 {{- $d := "" -}}
-{{- range $i := seq 0 119 -}}
-  {{- $t := div (mul (mul 2 math.Pi) $i) 120.0 -}}
-  {{- $r := add $a (mul $b (math.Cos (mul $k $t))) -}}
-  {{- $x := mul $r (math.Cos (add $t $r0)) -}}
-  {{- $y := mul $r (math.Sin (add $t $r0)) -}}
-  {{- $d = printf "%s%s%.1f %.1f" $d (cond (eq $i 0) "M" "L") $x $y -}}
+{{- range $k := seq 0 120 -}}
+  {{- $t := div (mul (mul 2 math.Pi) (float $k)) 120.0 -}}
+  {{- $h := add $a (math.Cos (mul 3 $t)) -}}
+  {{- $x := mul $s (mul $h (math.Cos (add $t $rot))) -}}
+  {{- $y := mul $s (mul $h (math.Sin (add $t $rot))) -}}
+  {{- $d = printf "%s%s%.1f %.1f" $d (cond (eq $k 0) "M" "L") $x (mul -1.0 $y) -}}
 {{- end -}}
-<path d="{{ $d }}Z" fill="var(--{{ .fill }})" fill-opacity="{{ .op }}"/>
+<path d="{{ $d }}Z" fill="var(--mark-{{ $copies }}-{{ $i }})" fill-opacity="0.25"/>
 {{- end }}
 </svg>

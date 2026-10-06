@@ -1,0 +1,24 @@
+{{- /*
+  perfectFit: the largest scale at which a copy, rotated by phi, still fits
+  inside its parent. The minimum over theta of R(theta)/R(theta-phi), with
+  R(theta) = A + cos(3*theta).
+
+  Sampled at 720 points, stated here rather than inherited, because
+  tests/checks/mark.py reimplements this and the two must agree on sampling or
+  they differ in the last decimal for reasons unrelated to the shape.
+
+  Measured at about 19 ms per mark including path generation, linear in the
+  number of marks. No caching or coarsening needed.
+*/ -}}
+{{- $a := .a -}}{{- $phi := .phi -}}
+{{- $n := 720 -}}
+{{- $min := 1000000.0 -}}
+{{- range $i := seq 0 (sub $n 1) -}}
+  {{- $t := div (mul (mul 2 math.Pi) (float $i)) (float $n) -}}
+  {{- $child := add $a (math.Cos (mul 3 (sub $t $phi))) -}}
+  {{- if gt $child 0.0001 -}}
+    {{- $r := div (add $a (math.Cos (mul 3 $t))) $child -}}
+    {{- if lt $r $min -}}{{- $min = $r -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $min -}}

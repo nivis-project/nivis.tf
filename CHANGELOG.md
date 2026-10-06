@@ -81,6 +81,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The mark is now the nested series the brand brief defines: each copy is a
+  rotated, scaled version of the one before it, sized so it just fits inside.
+  Its colours are spread across the brand's hue range by position, so a mark
+  with more copies spreads the same range over more steps.
+
 - JavaScript may now be used for presentation and effects, not just the theme
   switch. Scripts stay the site's own, stay within a small budget, and the page
   still delivers everything it says with scripting unavailable.

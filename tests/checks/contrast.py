@@ -110,6 +110,16 @@ def main():
     # and 269.8. A token outside that range is a colour from some other family,
     # which is the thing the brief is specifically trying to prevent.
     FAMILY = (180.0, 276.0)
+    # The mark span is defined in HSL, where the brief states it, so its hues
+    # are checked against the brief's own range rather than the oklch one.
+    span = yaml.safe_load((root / "data" / "tokens.yaml").read_text()).get("mark_span")
+    if span:
+        lo = span["hue_centre"] - span["hue_spread"] / 2
+        hi = span["hue_centre"] + span["hue_spread"] / 2
+        if not (175 <= lo and hi <= 235):
+            errors.append(
+                f"the mark hue span runs {lo} to {hi}, outside the brand's 175 to 235"
+            )
     for name, entry in by_name.items():
         for theme in ("light", "dark"):
             if theme == "dark" and "dark" not in entry:

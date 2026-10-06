@@ -9,7 +9,7 @@
     <div class="grid project-cards">
       {{- range $d.items }}
       <a class="project-card" href="{{ printf "%s/%s" $org .name }}">
-        {{ partial "mark.html" (dict "name" .mark "variant" "project" "size" 64) }}
+        {{ partial "mark.html" (dict "name" .mark "size" 64) }}
         <span class="project-head">
           <span class="project-name">{{ .name }}</span>
           <span class="status-pill">{{ .status }}</span>

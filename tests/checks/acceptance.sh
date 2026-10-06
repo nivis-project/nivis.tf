@@ -45,7 +45,7 @@ d["items"].append({
 })
 projects.write_text(yaml.safe_dump(d, sort_keys=False, allow_unicode=True))
 m = yaml.safe_load(marks.read_text())
-m["acceptance-probe"] = {"k": 6, "amp": 1.3, "rot": 30}
+m["acceptance-probe"] = {"ratio": 10, "copies": 4, "rot": 24, "fit": 0}
 marks.write_text(yaml.safe_dump(m, sort_keys=False, allow_unicode=True))
 PY
 
@@ -77,8 +77,8 @@ if [ "$href" != "https://github.com/nivis-project/acceptance-probe" ]; then
   echo "acceptance: the new card's destination is '$href', not derived from the organisation URL" >&2
   exit 1
 fi
-if [ "$paths" -ne 3 ]; then
-  echo "acceptance: the new card has $paths generated mark layers, expected 3" >&2
+if [ "$paths" -ne 4 ]; then
+  echo "acceptance: the new card has $paths generated mark copies, expected 4" >&2
   exit 1
 fi
 

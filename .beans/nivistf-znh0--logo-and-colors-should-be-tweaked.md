@@ -5,7 +5,8 @@ status: completed
 type: task
 priority: normal
 created_at: 2026-10-06T15:24:50Z
-updated_at: 2026-10-06T15:53:40Z
+updated_at: 2026-10-06T17:08:08Z
+openspec-link: openspec/changes/archive/2026-10-06-mark-nested-copies
 ---
 
 ## Summary of Changes

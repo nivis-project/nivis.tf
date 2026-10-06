@@ -1,7 +1,7 @@
 {{- $site := hugo.Data.site -}}
 <header class="site-header container">
   <a class="brand" href="#top" aria-label="{{ $site.name }}">
-    {{ partial "mark.html" (dict "name" "nivis" "variant" "full" "size" 40) }}
+    {{ partial "mark.html" (dict "name" "nivis" "size" 40) }}
     <span class="wordmark">{{ $site.name }}</span>
   </a>
   <nav class="site-nav" aria-label="{{ i18n "main_navigation" }}">

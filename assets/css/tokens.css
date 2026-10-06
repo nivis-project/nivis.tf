@@ -18,6 +18,17 @@
 {{ range $t.space }}
   --{{ .name }}: {{ .value }};
 {{- end }}
+
+{{/* One token per (copies, index) pair, from the span in data/tokens.yaml.
+     The hue spread depends on how many copies a mark draws, so a single
+     --mark-i cannot be well defined; --mark-<copies>-<index> can.
+     This is the only place a mark colour value exists. */}}
+{{- $m := $t.mark_span }}
+{{- range $n := seq 2 $m.max_copies }}
+{{- range $i := seq 0 (sub $n 1) }}
+  --mark-{{ $n }}-{{ $i }}: hsl({{ add $m.hue_centre (mul (sub (div (float $i) (float (sub $n 1))) 0.5) $m.hue_spread) }} {{ $m.saturation }}% {{ $m.lightness }}%);
+{{- end }}
+{{- end }}
 }
 
 :root[data-theme="dark"] {

@@ -28,12 +28,27 @@ if grep -q 'var(--' "$fav"; then
   echo "mark: favicon.svg still references custom properties, which it cannot resolve" >&2
   exit 1
 fi
-# Its colors must be the token values, not something hand-typed.
-for tok in mark-a mark-b mark-core; do
-  want="$(grep -oP "(?<=name: $tok,)\s*light: \"\K[^\"]+" data/tokens.yaml | head -1)"
-  if ! grep -qF "$want" "$fav"; then
-    echo "mark: favicon.svg does not use the $tok token value ($want)" >&2
-    exit 1
-  fi
-done
+# Its colours must come from the span in data/tokens.yaml, not be hand-typed.
+# A standalone file cannot resolve custom properties, so the values are
+# substituted; this checks they are the ones the stylesheet would have produced.
+python3 - "$fav" <<'PY'
+import pathlib, re, sys, yaml
+fav = pathlib.Path(sys.argv[1]).read_text()
+span = yaml.safe_load(pathlib.Path("data/tokens.yaml").read_text())["mark_span"]
+copies = len(re.findall(r"<path", fav))
+want = {
+    "hsl(%g %g%% %g%%)" % (
+        span["hue_centre"] + (i / (copies - 1) - 0.5) * span["hue_spread"],
+        span["saturation"], span["lightness"])
+    for i in range(copies)
+}
+got = set(re.findall(r'fill="([^"]+)"', fav))
+missing = want - got
+if missing:
+    print(f"mark: favicon.svg colours do not come from the span: missing {sorted(missing)}",
+          file=sys.stderr)
+    print(f"      it has {sorted(got)}", file=sys.stderr)
+    sys.exit(1)
+print(f"mark: favicon colours are the {copies} span steps, substituted from data/tokens.yaml")
+PY
 echo "mark: favicon generated from the same partial, colors inlined from the tokens"

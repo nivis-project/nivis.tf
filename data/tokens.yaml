@@ -35,15 +35,32 @@ colors:
   - { name: band-muted,   light: "oklch(0.86 0.045 215)",                                 role: "secondary text on band" }
   - { name: band-line,    light: "oklch(0.50 0.09 250)",                                  role: "card borders on band" }
   - { name: band-code,    light: "oklch(0.21 0.06 258)",   dark: "oklch(0.17 0.05 258)",  role: "code block on band" }
-  - { name: mark-a,       light: "oklch(0.781 0.129 187)", dark: "oklch(0.82 0.12 187)",  role: "mark outer layers (teal anchor)" }
-  - { name: mark-b,       light: "oklch(0.621 0.136 245)", dark: "oklch(0.72 0.13 245)",  role: "mark middle layers (sky anchor)" }
-  - { name: mark-core,    light: "oklch(0.455 0.228 270)", dark: "oklch(0.62 0.19 265)",  role: "mark core (deep blue anchor)" }
   # Syntax colours spread across the family's full hue range, so four tokens in
   # one analogous family stay distinguishable. All sit on the dark code ground.
   - { name: tok-keyword,  light: "oklch(0.80 0.13 268)",                                  role: "syntax: keywords" }
   - { name: tok-string,   light: "oklch(0.85 0.12 190)",                                  role: "syntax: strings" }
   - { name: tok-func,     light: "oklch(0.83 0.11 235)",                                  role: "syntax: functions, commands" }
   - { name: tok-literal,  light: "oklch(0.89 0.085 210)",                                 role: "syntax: booleans, numbers" }
+
+# The mark's colours are a function of a copy's position in the series, so they
+# cannot be three fixed tokens. The brief gives the rule directly, in HSL:
+#
+#   hue = 205 + (i / (N - 1) - 0.5) * 60,  saturation 65%, lightness 50%
+#
+# which spreads an analogous teal-to-blue family evenly across however many
+# copies a mark draws. assets/css/tokens.css emits one token per (copies, index)
+# pair from this, so every colour value still lives only in the token source and
+# the mark partial only ever writes var(--mark-N-i).
+#
+# HSL, not oklch, because the formula is defined there: the brief's palette is
+# evenly spaced in HSL, and interpolating the same endpoints in oklch misses the
+# middle steps by about a third of their chroma.
+mark_span:
+  hue_centre: 205
+  hue_spread: 60
+  saturation: 65
+  lightness: 50
+  max_copies: 7
 
 type:
   - { name: font-sans,          value: "Hind, 'Segoe UI', system-ui, sans-serif" }
