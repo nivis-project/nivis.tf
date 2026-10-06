@@ -81,6 +81,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A recoloured favicon or social image did not reach readers who had visited
+  before. Both live at fixed paths and so cannot carry a digest in their
+  filename the way the stylesheet does, and browsers cache a favicon through an
+  ordinary reload. Their references now carry a content digest.
+
 - Trying the theme button once opted you out of your system colour scheme
   permanently. Toggling back to the palette your system already prefers now
   clears the stored choice instead of pinning it, so the same button is also the

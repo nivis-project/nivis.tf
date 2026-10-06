@@ -91,7 +91,11 @@ def main():
     # The preview image must be a file the site actually serves.
     img = values.get("og:image")
     if img:
-        name = img.rsplit("/", 1)[-1]
+        # A cache-busting query is part of the URL, not of the filename. The
+        # generated images sit at fixed paths and cannot carry a digest in the
+        # name the way the bundled stylesheet does, so the digest rides in the
+        # query instead.
+        name = img.rsplit("/", 1)[-1].split("?", 1)[0]
         target = public / name
         if not target.is_file():
             errors.append(f"og:image points at {name}, which the site does not serve")
@@ -99,6 +103,11 @@ def main():
             body = target.read_text()
             if "<path d=\"M" not in body:
                 errors.append("the preview image contains no generated mark")
+            if "?" not in img:
+                errors.append(
+                    "og:image carries no cache-busting query, so a recoloured "
+                    "image would not reach readers who have visited before"
+                )
             if "var(--" in body:
                 errors.append(
                     "the preview image still references custom properties, which a "

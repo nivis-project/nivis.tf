@@ -4,7 +4,19 @@
 {{- with .Description }}
 <meta name="description" content="{{ . }}">
 {{- end }}
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+{{- /*
+  The favicon and the social image are generated, but live at fixed paths, so
+  neither can carry a content digest in its filename the way the bundled
+  stylesheet does. Browsers cache a favicon more persistently than almost
+  anything else, routinely surviving an ordinary reload, so recolouring the mark
+  would leave returning readers looking at the old one.
+
+  A digest in the query string changes the URL when, and only when, the content
+  changes, while the path itself stays where clients expect to find it.
+*/ -}}
+{{- $favicon := "" }}
+{{- with .OutputFormats.Get "FAVICON" }}{{ $favicon = printf "%s?v=%s" .RelPermalink (substr (sha256 (partial "mark-digest-source" $)) 0 8) }}{{ end }}
+<link rel="icon" href="{{ $favicon }}" type="image/svg+xml">
 {{- /*
   Sharing metadata reads the SAME title and description the page uses. A second
   copy is how a preview ends up contradicting the page it previews.
@@ -20,11 +32,11 @@
 <meta property="og:site_name" content="{{ hugo.Data.site.name }}">
 <meta property="og:title" content="{{ .Title }}">
 <meta property="og:description" content="{{ .Description }}">
-<meta property="og:image" content="{{ "social.svg" | absURL }}">
+<meta property="og:image" content="{{ printf "social.svg?v=%s" (substr (sha256 (partial "mark-digest-source" $)) 0 8) | absURL }}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ .Title }}">
 <meta name="twitter:description" content="{{ .Description }}">
-<meta name="twitter:image" content="{{ "social.svg" | absURL }}">
+<meta name="twitter:image" content="{{ printf "social.svg?v=%s" (substr (sha256 (partial "mark-digest-source" $)) 0 8) | absURL }}">
 {{- /*
   A recorded theme choice must reach the document root BEFORE the first paint,
   which rules out an external file: the browser would paint before fetching it.

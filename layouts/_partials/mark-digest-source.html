@@ -1,0 +1,11 @@
+{{- /*
+  Everything the generated images are built from. Hashing this gives a value
+  that changes exactly when the images do, which is what the cache-busting
+  query needs. Hashing the rendered SVG itself would be more direct, but the
+  favicon is a separate output format and is not available from the page.
+*/ -}}
+{{- range hugo.Data.tokens.colors -}}
+{{- if hasPrefix .name "mark-" }}{{ .name }}:{{ .light }};{{ end -}}
+{{- end -}}
+{{- with index hugo.Data.marks "nivis" }}{{ .k }},{{ .amp }},{{ .rot }}{{ end -}}
+{{- hugo.Data.site.name -}}
