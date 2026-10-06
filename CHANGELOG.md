@@ -60,3 +60,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and remembers the choice. The chosen palette is applied before the page
   paints, so there is no flash. Without JavaScript the system preference still
   decides and the button is not shown.
+
+### Fixed
+
+- Code samples rendered on the page background instead of their own dark one,
+  at a contrast ratio of 1.14 to 1. A transparent-background rule intended for
+  Chroma's line wrappers also matched the code block itself and outranked it.
+- The theme button was visible and did nothing when JavaScript was unavailable,
+  because a layout rule overrode the attribute that should have hidden it.

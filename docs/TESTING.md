@@ -31,6 +31,9 @@ names the thing that broke rather than reporting "the tests failed".
 | `acceptance`                 | the briefing's add-a-project criterion, replayed literally | present |
 | `syntax`                     | highlighting resolves to tokens, prompt not copyable, no wrapping | present |
 | `theming`                    | the theme mechanism: pre-paint ordering, one script, guarded storage | present |
+| `contrast`                   | every pairing meets its minimum, computed from the tokens | present |
+| `warm-is-a-fill`             | `--warm` is never used as a text colour          | present |
+| `e2e`                        | a real browser: layout, keyboard, theme, motion, axe-core | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -65,6 +68,58 @@ run against a deliberate violation before being trusted.
 | `acceptance`                 | three probes: a template rendering only the first six items, a hard-coded destination, a non-generated mark |
 | `syntax`                     | six probes: a reclassified token, an inline style, an unmapped class, a selectable prompt, an unselectable block, a wrapping rule |
 | `theming`                    | seven probes, including moving the pre-paint snippet below the stylesheet and removing the storage guard |
+| `contrast`                   | three probes: a lowered light value, a lowered dark-only value, warm used as text |
+| `e2e`                        | found three real defects on its first run, see below |
+
+### What the browser found that nothing else could
+
+The end-to-end suite caught three defects on its first run. Two were shipped
+bugs; one was a bug in the tests themselves. None of them could have been caught
+by reading the output.
+
+**Code blocks had no background.** `figure.code .chroma { background: transparent }`
+outranks `figure.code pre { background: var(--code-bg) }` on specificity,
+`(0,2,1)` against `(0,1,2)`, and `.chroma` *is* the `<pre>`. All seven samples
+rendered on the page background at **1.14:1**. Every individual rule was
+correct; the cascade was not. `css-colors` passed, `syntax` passed, and
+`contrast` passed, because the token *pairings* are fine, it is the resolved
+background that was wrong.
+
+**The theme button was visible without JavaScript.** An author `display: flex`
+overrides the `hidden` attribute's UA `display: none`. The `theming` check
+confirmed the attribute was present and stopped there, so the control was
+present and inert, which is the exact failure its spec requirement forbids.
+
+**A test passed for the wrong reason.** Chromium serialises `oklch()` in
+computed style as `oklch()`, not `rgb()`. The helper that decided "is this
+palette dark" averaged the numbers in the string, so `oklch(0.975 0.008 275)`
+averaged to about 92 and read as dark. The "follows the system" test was green
+while asserting nothing.
+
+It now compares the resolved `--ground` against the token values exactly. Those
+values come from `data/tokens.yaml` through the flake, and the `tokens` check
+already pins them against the briefing, so there is still one source.
+
+That third one is the lesson of this project in miniature: a green check that
+means less than it appears to. It took a *different* test failing to expose it.
+
+### Why contrast is computed, not eyeballed
+
+`contrast.py` converts OKLCH to Oklab to linear sRGB to relative luminance,
+following CSS Color 4 rather than approximating, and checks 18 pairings in both
+palettes. The conversion was validated against known values: white, black and
+pure red all round-trip exactly.
+
+A dark-only regression is the case a light-mode-only check misses, so both
+palettes are computed separately, and the probe that proves it lowers a
+`dark:` value specifically.
+
+**`--warm` is enforced in the CSS, not by contrast.** An earlier version of the
+check asserted warm *fails* contrast in both palettes. That was wrong: in dark
+it is about 10:1. The briefing's "insufficient contrast" is about the light
+palette, where it is 1.76:1. The rule holds in both because warm is a fill, so
+`warm-is-a-fill` greps the stylesheet instead, and `contrast` reports the light
+ratio as a note so the number that motivates the rule stays visible.
 
 ### Say which half is deferred, on every run
 
@@ -74,17 +129,10 @@ translation table, it ships hidden so it exists only when it works, storage
 access is guarded, the toggle consults the system preference, and the page ships
 exactly two scripts.
 
-It cannot prove the **behaviour**: that no flash occurs, that a choice survives
-a real reload, that the button is genuinely invisible with JavaScript off. Those
-need a browser.
-
-So it prints the deferral every time it passes:
-
-    theming: note, no-flash and persistence across a real reload are browser
-    behaviours, deferred to the e2e epic
-
-A green tick that implies coverage it does not have is worse than an amber one
-that says what it covers.
+It cannot prove the **behaviour**. That is now settled by `e2e`, which exercises
+no-flash, persistence across a reload, and the control's absence with scripting
+disabled in a real browser. The static check still prints its deferral note,
+because it remains true of that check on its own.
 
 Three failure modes it does catch, each a real bug rather than a style point:
 

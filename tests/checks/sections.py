@@ -153,7 +153,7 @@ def main():
 
     # Exactly these regions may scroll sideways. A new overflow-x anywhere else
     # is how the page itself starts scrolling on a phone.
-    ALLOWED_SCROLL = {"figure.code pre", ".table-scroll"}
+    ALLOWED_SCROLL = {"figure.code pre.chroma", ".table-scroll"}
     scrolling = set()
     for m in re.finditer(r"([^{}]+)\{[^{}]*overflow-x\s*:\s*auto[^{}]*\}", css):
         for sel in m.group(1).split(","):

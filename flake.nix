@@ -54,6 +54,18 @@
         }
       ];
 
+      # axe-core is not packaged in nixpkgs. Fetched as a fixed-output
+      # derivation with a pinned hash, which is exactly how nixpkgs fetches
+      # every other source: reproducible, and network only on a machine that
+      # has never built it. Browsers still come from nixpkgs and are never
+      # downloaded at test time.
+      axeCore =
+        pkgs:
+        pkgs.fetchurl {
+          url = "https://cdn.jsdelivr.net/npm/axe-core@4.10.2/axe.min.js";
+          sha256 = "1qvmggpdja8qdq3rklafxg1d8dyvnrk3nwni595nziq1xjfws4dm";
+        };
+
       siteFonts =
         pkgs:
         pkgs.runCommand "nivis-tf-fonts" { nativeBuildInputs = [ pkgs.woff2 ]; } (
@@ -181,6 +193,46 @@
           css-colors = script "css-colors" [ pkgs.gnugrep ];
 
           snippets = script "snippets" [ pythonEnv ];
+
+          contrast = script "contrast" [ pythonEnv ];
+
+          warm-is-a-fill = script "warm-is-a-fill" [ pkgs.gnugrep ];
+
+          # The browser suite. Browsers come from nixpkgs through
+          # PLAYWRIGHT_BROWSERS_PATH and are never downloaded at test time.
+          e2e =
+            pkgs.runCommand "check-e2e"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pkgs.playwright-test
+                  pythonEnv
+                ];
+                PLAYWRIGHT_BROWSERS_PATH = pkgs.playwright-driver.browsers;
+                PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
+                AXE_PATH = axeCore pkgs;
+                # The e2e suite identifies a palette by comparing the resolved
+                # --ground against these, rather than guessing from a serialised
+                # colour string. Taken from data/tokens.yaml so there is still
+                # one source.
+                TOKENS_JSON = builtins.toJSON {
+                  ground = {
+                    light = "oklch(0.975 0.008 275)";
+                    dark = "oklch(0.17 0.03 275)";
+                  };
+                };
+              }
+              ''
+                ${stageSrc}
+                cd src
+                hugo --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache" \
+                  --environment production > "$TMPDIR/build.log" 2>&1 \
+                  || { cat "$TMPDIR/build.log" >&2; exit 1; }
+                export SITE_DIR="$TMPDIR/public"
+                export HOME="$TMPDIR"
+                playwright test --config tests/e2e/playwright.config.js
+                touch "$out"
+              '';
 
           theming =
             pkgs.runCommand "check-theming"

@@ -43,7 +43,7 @@ figure.code {
   min-width: 0;
 }
 
-figure.code pre {
+figure.code pre.chroma {
   margin: 0;
   background: var(--code-bg);
   color: var(--code-ink);
@@ -61,8 +61,12 @@ figure.code pre code {
 }
 
 /* Chroma wraps each line; neither layer may introduce wrapping, because a
-   broken line changes what the code says. */
-figure.code .chroma,
+   broken line changes what the code says.
+
+   NOT `.chroma` itself: that is the <pre>, and a transparent background here
+   outranks `figure.code pre` on specificity (0,2,1 beats 0,1,2). It did, and
+   the code blocks rendered on the PAGE background at 1.14:1. axe caught it;
+   no static check could, because every rule was individually correct. */
 figure.code .chroma .line,
 figure.code .chroma .cl {
   background: transparent;
@@ -107,6 +111,14 @@ figure.code figcaption {
 
 .nav-link:hover {
   color: var(--ink);
+}
+
+/* An author `display` beats the `hidden` attribute's UA `display: none`, so a
+   button shipped hidden would be VISIBLE and inert without JavaScript. The
+   static check saw the attribute and concluded the job was done; the browser
+   proved otherwise. */
+.theme-switch[hidden] {
+  display: none;
 }
 
 .theme-switch {
@@ -246,7 +258,7 @@ figure.code figcaption {
   gap: 8px;
 }
 
-.band figure.code pre {
+.band figure.code pre.chroma {
   background: var(--band-code);
 }
 
