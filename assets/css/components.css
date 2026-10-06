@@ -60,6 +60,15 @@ figure.code pre code {
   white-space: pre;
 }
 
+/* Chroma wraps each line; neither layer may introduce wrapping, because a
+   broken line changes what the code says. */
+figure.code .chroma,
+figure.code .chroma .line,
+figure.code .chroma .cl {
+  background: transparent;
+  white-space: pre;
+}
+
 figure.code figcaption {
   font-family: var(--font-mono);
   font-size: var(--text-mono-label);

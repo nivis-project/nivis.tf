@@ -29,6 +29,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `page-chrome`                | heading structure, same-page link targets, chrome strings from data | present |
 | `sections`                   | the page agrees with the data, section by section  | present |
 | `acceptance`                 | the briefing's add-a-project criterion, replayed literally | present |
+| `syntax`                     | highlighting resolves to tokens, prompt not copyable, no wrapping | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -61,6 +62,36 @@ run against a deliberate violation before being trusted.
 | `page-chrome`                | six probes: a second h1, a skipped rank, a dangling nav target, missing focus rules, a broken skip link, stale chrome |
 | `sections`                   | seventeen probes, including a div pretending to be a table, a moved highlight, a stray `overflow-x`, a hard-coded subject column, a nested link, an unlabelled section |
 | `acceptance`                 | three probes: a template rendering only the first six items, a hard-coded destination, a non-generated mark |
+| `syntax`                     | six probes: a reclassified token, an inline style, an unmapped class, a selectable prompt, an unselectable block, a wrapping rule |
+
+### A gap reported out loud beats a test that quietly asserts less
+
+`--tok-func` has a rule in `syntax.css` and **nothing on the page triggers it**.
+
+The briefing warned this would happen: Chroma's Nix lexer may not classify
+`lib.mkResource` as a function, and the instruction was to accept what the lexer
+gives rather than adding markup to force it. Measuring all seven samples
+confirmed it: across every language Chroma emits keywords, strings, escapes,
+constants, prompts and comments, and no function or builtin token at all.
+
+Three options existed. Deleting the token discards a value the briefing's
+palette defines and would have to be restored the moment a sample uses a
+builtin. Adding markup to the samples breaks the guarantee that a sample renders
+byte for byte from its file. So the rule stays and `syntax` prints the gap on
+every run:
+
+    syntax: note, --tok-func is mapped but no sample currently produces it
+
+The alternative was a test asserting "five token colours are used", which would
+have been either false or quietly weakened until it passed. A visible gap is
+worth more than a green check that means less than it looks like it means.
+
+### Guard against a silent reclassification
+
+`syntax` asserts that **specific** Chroma classes appear in **specific**
+languages, measured from real output rather than transcribed from a published
+list. A Hugo bump that reclassifies a token would otherwise restyle the page
+with nothing failing. Now it fails the gate and names the language and the class.
 
 ### Execute the acceptance criterion, do not paraphrase it
 

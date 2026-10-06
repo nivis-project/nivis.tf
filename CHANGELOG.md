@@ -53,3 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The projects and go deeper sections render from data. Adding a project to
   `data/home/projects.yaml` and `data/marks.yaml` adds a card with a generated
   mark and no template change, which the gate proves by doing it.
+- Code samples are syntax highlighted through CSS classes mapped onto the
+  design tokens. Shell prompts are visible but left out of a copied selection,
+  so dragging across a sample and pasting gives a runnable command.

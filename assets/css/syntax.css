@@ -1,2 +1,73 @@
-/* Chroma token classes mapped onto the --tok-* tokens.
-   Filled in by nivistf-6wvw; created here so the bundle has its slot. */
+/* Chroma token classes mapped onto the --tok-* and --code-* tokens.
+   Written by hand, as the briefing requires: Chroma's generated stylesheet
+   would put colour values outside tokens.css.
+
+   The mapping was built from what these seven samples actually emit, not from
+   a published class list. Neighbouring classes are included so that a future
+   sample with a number or a single-quoted string does not suddenly render as
+   plain text.
+
+   Note: no sample currently produces a function or builtin token, so --tok-func
+   has a rule that nothing triggers. The briefing predicted this and said to
+   accept what the lexer gives rather than adding markup to the samples. See
+   docs/TESTING.md. */
+
+.chroma .k,
+.chroma .kc,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .kt {
+  color: var(--tok-keyword);
+}
+
+.chroma .s,
+.chroma .sa,
+.chroma .sb,
+.chroma .sc,
+.chroma .s1,
+.chroma .s2,
+.chroma .se,
+.chroma .sh,
+.chroma .si,
+.chroma .sx {
+  color: var(--tok-string);
+}
+
+.chroma .nf,
+.chroma .nb,
+.chroma .nv,
+.chroma .fm {
+  color: var(--tok-func);
+}
+
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .mo,
+.chroma .no,
+.chroma .bp {
+  color: var(--tok-literal);
+}
+
+.chroma .c,
+.chroma .c1,
+.chroma .cm,
+.chroma .cp,
+.chroma .cs,
+.chroma .ch {
+  color: var(--code-dim);
+}
+
+/* The shell prompt stays visible but is left out of a selection, so dragging
+   across a sample and pasting gives a runnable command. A ::before would make
+   generated content carry meaning; omitting it would lose the signal that
+   these are shell commands. */
+.chroma .gp {
+  color: var(--code-dim);
+  user-select: none;
+  -webkit-user-select: none;
+}

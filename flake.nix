@@ -182,6 +182,20 @@
 
           snippets = script "snippets" [ pythonEnv ];
 
+          syntax =
+            pkgs.runCommand "check-syntax"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/syntax.sh src
+                touch "$out"
+              '';
+
           # Replays the briefing's acceptance criterion literally: it really
           # adds a project, rebuilds, and diffs layouts/ and assets/.
           acceptance =
