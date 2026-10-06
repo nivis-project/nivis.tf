@@ -52,7 +52,7 @@
           nativeBuildInputs = [ pkgs.hugo ];
           buildPhase = ''
             runHook preBuild
-            hugo --minify --destination "$TMPDIR/public"
+            hugo --minify --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache"
             runHook postBuild
           '';
           installPhase = ''
@@ -63,16 +63,51 @@
         };
       });
 
-      checks = forAllSystems (pkgs: {
-        hugo-version-pin = pkgs.runCommand "hugo-version-pin" { } ''
-          if [ "${pkgs.hugo.version}" != "${hugoVersion}" ]; then
-            echo "nixpkgs Hugo is ${pkgs.hugo.version} but .hugo-version pins ${hugoVersion}" >&2
-            echo "update .hugo-version and amplify.yml together, never one alone" >&2
-            exit 1
-          fi
-          touch "$out"
-        '';
-      });
+      checks = forAllSystems (
+        pkgs:
+        let
+          # A check is a script under tests/checks/ run against the source tree.
+          # Keeping them as scripts rather than inline Nix means a contributor
+          # can run one directly, and the failure message is the script's own.
+          script =
+            name: deps:
+            pkgs.runCommand "check-${name}" { nativeBuildInputs = deps; } ''
+              cd ${self}
+              bash tests/checks/${name}.sh .
+              touch "$out"
+            '';
+        in
+        {
+          hugo-version-pin = pkgs.runCommand "check-hugo-version-pin" { } ''
+            if [ "${pkgs.hugo.version}" != "${hugoVersion}" ]; then
+              echo "nixpkgs Hugo is ${pkgs.hugo.version} but .hugo-version pins ${hugoVersion}" >&2
+              echo "update .hugo-version and amplify.yml together, never one alone" >&2
+              exit 1
+            fi
+            touch "$out"
+          '';
+
+          hugo-extended = script "hugo-extended" [ pkgs.hugo ];
+
+          hugo-math = script "hugo-math" [ pkgs.hugo ];
+
+          hugo-version-single-source = script "hugo-version-single-source" [ pkgs.gnugrep ];
+
+          build = pkgs.runCommand "check-build" { nativeBuildInputs = [ pkgs.hugo ]; } ''
+            # Hugo writes a build lock next to the source, so the read-only
+            # store path has to be copied before it can be built.
+            cp -r ${self} src && chmod -R u+w src && cd src
+            # Hugo exits 0 on a deprecation or a missing-layout warning. The
+            # site must build silent, so the warnings are the failure condition.
+            hugo --minify --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache" 2>&1 | tee "$TMPDIR/log"
+            if grep -qE "^(WARN|ERROR)" "$TMPDIR/log"; then
+              echo "build: Hugo emitted warnings; the site must build silent" >&2
+              exit 1
+            fi
+            touch "$out"
+          '';
+        }
+      );
 
       formatter = forAllSystems (
         pkgs:

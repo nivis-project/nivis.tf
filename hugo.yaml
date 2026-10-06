@@ -1,0 +1,28 @@
+baseURL: "https://nivis.tf/"
+locale: "en"
+defaultContentLanguage: "en"
+title: "Nivis"
+enableRobotsTXT: true
+disableKinds:
+  - taxonomy
+  - term
+  - RSS
+  - sitemap
+markup:
+  highlight:
+    noClasses: false
+    lineNos: false
+    tabWidth: 2
+  goldmark:
+    renderer:
+      unsafe: false
+module:
+  mounts:
+    - source: assets
+      target: assets
+    - source: snippets
+      target: assets/snippets
+    - source: content
+      target: content
+    - source: static
+      target: static

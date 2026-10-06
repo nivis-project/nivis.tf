@@ -13,19 +13,41 @@ Each check is its own `checks.<system>.<name>` in `flake.nix`, so a failure
 names the thing that broke rather than reporting "the tests failed".
 
 | Check | Owns | Status |
-|--------------------|-------------------------------------------------------|---------|
-| `hugo-version-pin` | nixpkgs Hugo matches `.hugo-version`                   | present |
-| `build`            | the site builds with no Hugo warnings                  | planned |
-| `unit`             | Hugo template assertions over fixture sites            | planned |
-| `invariants`       | the content / style / template separation rules        | planned |
-| `html`             | the generated HTML is valid and semantic               | planned |
-| `links`            | every external link resolves                           | planned |
-| `e2e`              | Playwright against the built `public/`                 | planned |
-| `a11y`             | axe-core over the built page in both themes            | planned |
+|------------------------------|---------------------------------------------------|---------|
+| `hugo-version-pin`           | nixpkgs Hugo matches `.hugo-version`              | present |
+| `hugo-extended`              | the pinned Hugo is the extended build             | present |
+| `hugo-math`                  | `math.Cos` / `math.Sin` / `math.Pi` compute the mark curve correctly | present |
+| `hugo-version-single-source` | the version number appears only in `.hugo-version` | present |
+| `build`                      | the site builds with no Hugo warnings             | present |
+| `unit`                       | Hugo template assertions over fixture sites       | planned |
+| `invariants`                 | the content / style / template separation rules   | planned |
+| `html`                       | the generated HTML is valid and semantic          | planned |
+| `links`                      | every external link resolves                      | planned |
+| `e2e`                        | Playwright against the built `public/`            | planned |
+| `a11y`                       | axe-core over the built page in both themes       | planned |
 
 "planned" means the epic that owns it has not shipped yet. Milestone 01, epic
-`nivistf-7mto`, builds the harness and wires the empty checks. Milestone 02,
+`nivistf-7mto`, builds the harness and wires the remaining checks. Milestone 02,
 epic `nivistf-rs19`, fills in `invariants`.
+
+### What each present check guards, and how it was proven to bite
+
+A check nobody has seen fail is a check nobody has tested. Each of these was
+run against a deliberate violation before being trusted.
+
+| Check | Proven by |
+|------------------------------|------------------------------------------------|
+| `hugo-version-pin`           | caught a real drift during bootstrap, where `.hugo-version` recorded 0.163.3 and nixpkgs had moved on |
+| `hugo-extended`              | a stub `hugo` on `PATH` reporting a non-extended version string |
+| `hugo-math`                  | overriding `EXPECTED_PATH_DATA` to a wrong value |
+| `hugo-version-single-source` | a fixture tree with the version copied into a second file |
+| `build`                      | restoring the deprecated `languageCode` key, which makes Hugo warn |
+
+`hugo-math` renders one point of the mark curve and compares it to a literal.
+The expected value matches the generator in `nivis-mockup-reference.html` to the
+decimal: `M92.4 0.0L92.2 4.8L91.5 9.6L90.4 14.3L88.8 18.9L86.9 23.3`. Comparing
+against a value rather than "it rendered" also catches a Hugo whose float
+formatting changes, which would silently alter every path in every mark.
 
 Keep this table current. It is the one place that says what is actually
 guarded.
