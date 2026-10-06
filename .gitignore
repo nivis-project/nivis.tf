@@ -1,0 +1,7 @@
+/public/
+/result
+/resources/_gen/
+/.hugo_build.lock
+/node_modules/
+/test-results/
+/playwright-report/

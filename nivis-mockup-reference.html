@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nivis — home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind:wght@300;400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+html{scroll-behavior:smooth}
+pre{margin:0}
+.nv{
+--warm:oklch(0.8 0.14 78);--on-warm:oklch(0.17 0.03 275);
+--ground:oklch(0.975 0.008 275);--surface:oklch(0.995 0.003 275);--ink:oklch(0.24 0.04 275);--muted:oklch(0.45 0.035 275);--line:oklch(0.88 0.02 275);
+--accent:oklch(0.42 0.19 275);--on-accent:oklch(0.99 0.005 275);--accent-soft:oklch(0.93 0.04 275);
+--code-bg:oklch(0.23 0.045 275);--code-ink:oklch(0.93 0.015 275);--code-dim:oklch(0.74 0.05 275);
+--band-bg:oklch(0.235 0.09 275);--band-ink:oklch(0.96 0.01 275);--band-muted:oklch(0.84 0.04 275);--band-line:oklch(0.46 0.08 275);--band-code:oklch(0.19 0.05 275);
+--mark-a:oklch(0.6 0.16 250);--mark-b:oklch(0.55 0.2 305);--mark-core:oklch(0.37 0.19 275);
+}
+.nv[data-theme="dark"]{
+--ground:oklch(0.17 0.03 275);--surface:oklch(0.21 0.035 275);--ink:oklch(0.94 0.012 275);--muted:oklch(0.76 0.035 275);--line:oklch(0.34 0.04 275);
+--accent:oklch(0.78 0.12 275);--on-accent:oklch(0.17 0.03 275);--accent-soft:oklch(0.3 0.07 275);
+--code-bg:oklch(0.13 0.025 275);--band-bg:oklch(0.23 0.08 275);--band-code:oklch(0.15 0.04 275);
+--mark-a:oklch(0.72 0.13 250);--mark-b:oklch(0.7 0.16 305);--mark-core:oklch(0.82 0.1 275);
+}
+@media (prefers-color-scheme: dark){.nv[data-theme="auto"]{
+--ground:oklch(0.17 0.03 275);--surface:oklch(0.21 0.035 275);--ink:oklch(0.94 0.012 275);--muted:oklch(0.76 0.035 275);--line:oklch(0.34 0.04 275);
+--accent:oklch(0.78 0.12 275);--on-accent:oklch(0.17 0.03 275);--accent-soft:oklch(0.3 0.07 275);
+--code-bg:oklch(0.13 0.025 275);--band-bg:oklch(0.23 0.08 275);--band-code:oklch(0.15 0.04 275);
+--mark-a:oklch(0.72 0.13 250);--mark-b:oklch(0.7 0.16 305);--mark-core:oklch(0.82 0.1 275);
+}}
+.nv pre .k{color:oklch(0.8 0.13 320)}.nv pre .s{color:oklch(0.85 0.11 160)}.nv pre .f{color:oklch(0.83 0.1 240)}.nv pre .n{color:oklch(0.85 0.12 78)}
+.nv a{color:var(--accent)}.nv a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="nv" data-theme="{{theme}}" style="background: var(--ground); color: var(--ink); font-family: Hind, 'Segoe UI', system-ui, sans-serif; font-size: 18px; line-height: 1.55">
+
+<header style="max-width: 1120px; margin: 0 auto; padding: 24px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px">
+<a href="#top" aria-label="Nivis home" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink)">
+<svg viewBox="-100 -100 200 200" width="40" height="40" aria-hidden="true">
+<path d="{{m.l0}}" style="fill: var(--mark-a)" fill-opacity="0.34"></path>
+<path d="{{m.l1}}" style="fill: var(--mark-b)" fill-opacity="0.34"></path>
+<path d="{{m.l2}}" style="fill: var(--mark-a)" fill-opacity="0.34"></path>
+<path d="{{m.l3}}" style="fill: var(--mark-b)" fill-opacity="0.34"></path>
+<path d="{{m.core}}" style="fill: var(--mark-core)"></path>
+</svg>
+<span style="font-size: 34px; font-weight: 400; line-height: 1; letter-spacing: -0.01em; padding-top: 4px">Nivis</span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 28px; font-size: 17px">
+<a href="#start" style="text-decoration: none; padding: 10px 0; color: var(--muted)">Quick start</a>
+<a href="#roundtrip" style="text-decoration: none; padding: 10px 0; color: var(--muted)">Round trip</a>
+<a href="#compare" style="text-decoration: none; padding: 10px 0; color: var(--muted)">Compare</a>
+<a href="#projects" style="text-decoration: none; padding: 10px 0; color: var(--muted)">Projects</a>
+<a href="https://github.com/nivis-project" style="text-decoration: none; padding: 9px 18px; border: 1.5px solid var(--accent); border-radius: 999px; color: var(--ink); font-weight: 500">GitHub</a>
+<button onClick="{{toggleTheme}}" aria-label="Switch between light and dark" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0">
+<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"></path></svg>
+</button>
+</nav>
+</header>
+
+<main id="top">
+
+<section style="max-width: 1120px; margin: 0 auto; padding: 56px 24px 88px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 48px; align-items: center">
+<div style="display: flex; flex-direction: column; gap: 24px; align-items: flex-start">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px">early but real · Apache-2.0</div>
+<h1 style="margin: 0; font-size: clamp(40px, 5.6vw, 68px); line-height: 1.04; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance">Terraform providers as first-class Nix values.</h1>
+<p style="margin: 0; font-size: 21px; line-height: 1.5; color: var(--muted); max-width: 34em; text-wrap: pretty">Describe real infrastructure in a flake instead of HCL. A thin Go executor drives unmodified Terraform and OpenTofu provider binaries, and what the cloud returns flows back into Nix.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center">
+<a href="#start" style="text-decoration: none; background: var(--warm); color: var(--on-warm); padding: 13px 26px; border-radius: 999px; font-weight: 500; font-size: 18px">Try it in five minutes</a>
+<a href="#roundtrip" style="padding: 13px 4px; font-size: 18px">How the round trip works</a>
+</div>
+<pre style="align-self: stretch; background: var(--code-bg); color: var(--code-ink); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; line-height: 1.6; padding: 16px 20px; border-radius: 10px; overflow-x: auto"><span style="color: var(--code-dim)">$ </span><span class="f">nix</span>run github:nivis-project/nivis#nivis -- --version</pre>
+</div>
+<div style="display: flex; justify-content: center">
+<svg viewBox="-100 -100 200 200" role="img" aria-label="The Nivis mark: layered shapes drawn from h(θ) = a + b · cos 3θ" style="width: 100%; max-width: 440px; height: auto">
+<path d="{{m.l0}}" style="fill: var(--mark-a)" fill-opacity="0.3"></path>
+<path d="{{m.l1}}" style="fill: var(--mark-b)" fill-opacity="0.3"></path>
+<path d="{{m.l2}}" style="fill: var(--mark-a)" fill-opacity="0.3"></path>
+<path d="{{m.l3}}" style="fill: var(--mark-b)" fill-opacity="0.3"></path>
+<path d="{{m.core}}" style="fill: var(--mark-core)"></path>
+</svg>
+</div>
+</section>
+
+<section aria-labelledby="h-from" style="background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line)">
+<div style="max-width: 1120px; margin: 0 auto; padding: 80px 24px; display: flex; flex-direction: column; gap: 40px">
+<h2 id="h-from" style="margin: 0; font-size: 38px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em">You already know half of it.</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px">
+<div style="background: var(--ground); border-radius: 14px; padding: 32px; display: flex; flex-direction: column; gap: 16px">
+<h3 style="margin: 0; font-size: 24px; font-weight: 600">Coming from Nix</h3>
+<p style="margin: 0; color: var(--muted)">The missing half is the provider ecosystem.</p>
+<ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 12px">
+<li>A <strong>provider</strong> is a plugin binary that speaks to one cloud API. Nivis runs any OpenTofu-compatible provider as-is.</li>
+<li><strong>plan</strong> previews what would change, <strong>apply</strong> makes it so, and <strong>state</strong> remembers what exists.</li>
+<li>A resource is an attrset built with <code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.86em">mkResource</code>. Compose it with the functions and modules you already write.</li>
+</ul>
+</div>
+<div style="background: var(--ground); border-radius: 14px; padding: 32px; display: flex; flex-direction: column; gap: 16px">
+<h3 style="margin: 0; font-size: 24px; font-weight: 600">Coming from Terraform</h3>
+<p style="margin: 0; color: var(--muted)">The missing half is the language.</p>
+<ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 12px">
+<li>Same providers, same <strong>plan / apply / destroy</strong>. A <code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.86em">flake.nix</code> takes the place of your <code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.86em">.tf</code> files.</li>
+<li><code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.86em">aws_s3_bucket.demo.id</code> becomes <code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.86em">bucket.refAttr "id"</code>, an ordinary value you can pass to any function.</li>
+<li>Nix also builds machines. A NixOS image and the cloud resources that boot it can live in one expression.</li>
+</ul>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: var(--muted)">main.tf</div>
+<pre style="flex-grow: 1; background: var(--code-bg); color: var(--code-ink); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; line-height: 1.65; padding: 20px 22px; border-radius: 10px; overflow-x: auto"><span class="k">provider</span> <span class="s">"aws"</span> {
+  region = <span class="s">"eu-central-1"</span>
+}
+
+<span class="k">resource</span> <span class="s">"aws_s3_bucket"</span> <span class="s">"demo"</span> {
+  force_destroy = <span class="n">true</span>
+}</pre>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: var(--muted)">flake.nix (excerpt)</div>
+<pre style="flex-grow: 1; background: var(--code-bg); color: var(--code-ink); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; line-height: 1.65; padding: 20px 22px; border-radius: 10px; overflow-x: auto">providers.aws = <span class="f">lib.mkProvider</span> {
+  source = <span class="s">"registry.opentofu.org/hashicorp/aws"</span>;
+  config.region = <span class="s">"eu-central-1"</span>;
+};
+resources = [
+  (<span class="f">lib.mkResource</span> {
+    provider = <span class="s">"aws"</span>; type = <span class="s">"aws_s3_bucket"</span>; name = <span class="s">"demo"</span>;
+    config.force_destroy = <span class="n">true</span>;
+  })
+];</pre>
+</div>
+</div>
+</div>
+</section>
+
+<section id="start" aria-labelledby="h-start" style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; display: flex; flex-direction: column; gap: 48px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h2 id="h-start" style="margin: 0; font-size: 38px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em">Quick start</h2>
+<p style="margin: 0; color: var(--muted); max-width: 40em">All you need is Nix with flakes enabled. The first two steps touch no cloud account.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 16px">
+<div aria-hidden="true" style="width: 40px; height: 40px; border-radius: 50%; background: var(--warm); color: var(--on-warm); display: flex; align-items: center; justify-content: center; font-weight: 600; padding-top: 2px; box-sizing: border-box">1</div>
+<div style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+<h3 style="margin: 0; font-size: 24px; font-weight: 600; padding-top: 4px">Run it without cloning</h3>
+<pre style="background: var(--code-bg); color: var(--code-ink); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; line-height: 1.65; padding: 18px 22px; border-radius: 10px; overflow-x: auto"><span style="color: var(--code-dim)">$ </span><span class="f">nix</span>run github:nivis-project/nivis#nivis -- --version</pre>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 16px">
+<div aria-hidden="true" style="width: 40px; height: 40px; border-radius: 50%; background: var(--warm); color: var(--on-warm); display: flex; align-items: center; justify-content: center; font-weight: 600; padding-top: 2px; box-sizing: border-box">2</div>
+<div style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+<h3 style="margin: 0; font-size: 24px; font-weight: 600; padding-top: 4px">Take the guided tour</h3>
+<p style="margin: 0; color: var(--muted); max-width: 40em"><code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.86em">nivistutor</code> scaffolds a sandboxed tutorial project, so you can watch a plan and an apply before any credentials are involved.</p>
+<pre style="background: var(--code-bg); color: var(--code-ink); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; line-height: 1.65; padding: 18px 22px; border-radius: 10px; overflow-x: auto"><span style="color: var(--code-dim)">$ </span><span class="f">nix</span>shell github:nivis-project/nivis#nivis github:nivis-project/nivis#tutor
+<span style="color: var(--code-dim)">$ </span><span class="f">nivistutor</span></pre>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 16px">
+<div aria-hidden="true" style="width: 40px; height: 40px; border-radius: 50%; background: var(--warm); color: var(--on-warm); display: flex; align-items: center; justify-content: center; font-weight: 600; padding-top: 2px; box-sizing: border-box">3</div>
+<div style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+<h3 style="margin: 0; font-size: 24px; font-weight: 600; padding-top: 4px">Write a flake</h3>
+<p style="margin: 0; color: var(--muted); max-width: 40em">One provider, one resource. This is a complete <code style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.86em">flake.nix</code>.</p>
+<pre style="background: var(--code-bg); color: var(--code-ink); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; line-height: 1.65; padding: 20px 22px; border-radius: 10px; overflow-x: auto">{
+  inputs.nivis.url = <span class="s">"github:nivis-project/nivis"</span>;
+  outputs = { self, nivis }:
+    <span class="k">let</span> lib = nivis.lib; <span class="k">in</span> {
+      nivis.plan = ledger: <span class="f">lib.toIR</span> {
+        providers.aws = <span class="f">lib.mkProvider</span> {
+          source = <span class="s">"registry.opentofu.org/hashicorp/aws"</span>;
+          config.region = <span class="s">"eu-central-1"</span>;
+        };
+        resources = [
+          (<span class="f">lib.mkResource</span> {
+            provider = <span class="s">"aws"</span>; type = <span class="s">"aws_s3_bucket"</span>; name = <span class="s">"demo"</span>;
+            config.force_destroy = <span class="n">true</span>;
+          })
+        ];
+        <span class="k">inherit</span> ledger;
+      };
+    };
+}</pre>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 16px">
+<div aria-hidden="true" style="width: 40px; height: 40px; border-radius: 50%; background: var(--warm); color: var(--on-warm); display: flex; align-items: center; justify-content: center; font-weight: 600; padding-top: 2px; box-sizing: border-box">4</div>
+<div style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+<h3 style="margin: 0; font-size: 24px; font-weight: 600; padding-top: 4px">Plan, apply, inspect, destroy</h3>
+<p style="margin: 0; color: var(--muted); max-width: 40em">From here on you are creating real resources in your own AWS account.</p>
+<pre style="background: var(--code-bg); color: var(--code-ink); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; line-height: 1.65; padding: 18px 22px; border-radius: 10px; overflow-x: auto"><span style="color: var(--code-dim)">$ </span><span class="f">nivis</span> plan                              <span style="color: var(--code-dim)">
+# preview changes
+</span><span style="color: var(--code-dim)">$ </span><span class="f">nivis </span>apply                             <span style="color: var(--code-dim)">
+# apply to fixpoint</span><span style="color: var(--code-dim)">
+$ </span><span class="f">nivis </span>state show aws.aws_s3_bucket.demo
+<span style="color: var(--code-dim)">$ </span><span class="f">nivis</span> destroy</pre>
+<p style="margin: 0"><a href="https://github.com/nivis-project/nivis/blob/HEAD/docs/GETTING-STARTED.md">Read the full getting-started guide</a></p>
+</div>
+</div>
+</section>
+
+<section id="roundtrip" aria-labelledby="h-rt" style="background: var(--band-bg); color: var(--band-ink)">
+<div style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h2 id="h-rt" style="margin: 0; font-size: 38px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em">The round trip</h2>
+<p style="margin: 0; color: var(--band-muted); max-width: 40em; font-size: 20px; text-wrap: pretty">A provider creates a resource and returns values nobody could know beforehand: an IP, an ID, a generated name. Nivis hands those back to Nix and evaluates again, until nothing is left unknown.</p>
+</div>
+<ol style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 16px">
+<li style="border: 1px solid var(--band-line); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: var(--band-muted)">01 evaluate</div>
+<div>Nix evaluates your flake to a JSON plan. Values that only exist after apply become typed placeholders.</div>
+</li>
+<li style="border: 1px solid var(--band-line); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: var(--band-muted)">02 apply</div>
+<div>The executor applies everything that is fully known, speaking the plugin protocol to the provider binaries.</div>
+</li>
+<li style="border: 1px solid var(--band-line); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: var(--band-muted)">03 ledger</div>
+<div>Whatever the providers computed is collected in the ledger.</div>
+</li>
+<li style="border: 1px solid var(--band-line); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; color: var(--band-muted)">04 re-evaluate</div>
+<div>Nix runs again with the ledger as input. Placeholders resolve, the next phase unlocks, and the loop repeats to a fixpoint.</div>
+</li>
+</ol>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 32px; align-items: center">
+<pre style="min-width: 0; background: var(--band-code); color: var(--code-ink); font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14.5px; line-height: 1.65; padding: 20px 22px; border-radius: 10px; overflow-x: auto">note = <span class="f">lib.mkResource</span> {
+  provider = <span class="s">"aws"</span>;
+  type = <span class="s">"aws_s3_object"</span>;
+  name = <span class="s">"note"</span>;
+  config = {
+    bucket = <span class="f">bucket.refAttr</span> <span class="s">"id"</span>;
+    key = <span class="s">"hello-from-nix.txt"</span>;
+    content = <span class="f">lib.str</span> [
+      <span class="s">"This file's content was generated by Nix.\n"</span>
+      <span class="s">"It is stored in the bucket named: "</span>
+      (<span class="f">bucket.refAttr</span> <span class="s">"id"</span>)
+      <span class="s">"\n"</span>
+    ];
+    content_type = <span class="s">"text/plain"</span>;
+  };
+};</pre>
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h3 style="margin: 0; font-size: 24px; font-weight: 600">A file whose content depends on a name AWS has yet to invent</h3>
+<p style="margin: 0; color: var(--band-muted)">The bucket id does not exist until phase one has run. In phase two Nix builds the string around it, and the result becomes the body of a real S3 object.</p>
+<p style="margin: 0"><a href="https://github.com/nivis-project/nivis/blob/HEAD/docs/TUTORIAL-AWS-S3.md" style="color: var(--band-ink)">Follow the AWS S3 tutorial</a></p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="compare" aria-labelledby="h-cmp" style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h2 id="h-cmp" style="margin: 0; font-size: 38px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em">Where Nivis sits</h2>
+<p style="margin: 0; color: var(--muted); max-width: 40em">Terranix generates HCL from Nix and hands it to Terraform. Pulumi compiles providers through a bridge. Nivis keeps resources as Nix values and spawns the providers untouched.</p>
+</div>
+<div style="overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface)">
+<table style="width: 100%; min-width: 860px; border-collapse: collapse; font-size: 16px; line-height: 1.4">
+<thead>
+<tr>
+<th scope="col" style="text-align: left; padding: 16px 20px; border-bottom: 1px solid var(--line); font-weight: 500; color: var(--muted); width: 24%"></th>
+<th scope="col" style="text-align: left; padding: 16px 20px; border-bottom: 1px solid var(--line); font-weight: 600; background: var(--accent-soft)">Nivis</th>
+<th scope="col" style="text-align: left; padding: 16px 20px; border-bottom: 1px solid var(--line); font-weight: 600">OpenTofu / Terraform</th>
+<th scope="col" style="text-align: left; padding: 16px 20px; border-bottom: 1px solid var(--line); font-weight: 600">Terranix</th>
+<th scope="col" style="text-align: left; padding: 16px 20px; border-bottom: 1px solid var(--line); font-weight: 600">NixOps 4</th>
+<th scope="col" style="text-align: left; padding: 16px 20px; border-bottom: 1px solid var(--line); font-weight: 600">Pulumi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th scope="row" style="text-align: left; padding: 14px 20px; border-bottom: 1px solid var(--line); font-weight: 500">Config language</th>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--accent-soft); font-weight: 600">Nix</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">HCL</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Nix → HCL</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Nix</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">TS, Python, Go, …</td>
+</tr>
+<tr>
+<th scope="row" style="text-align: left; padding: 14px 20px; border-bottom: 1px solid var(--line); font-weight: 500">Reuses Terraform / OpenTofu providers</th>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--accent-soft); font-weight: 600">Yes, spawned unmodified</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes, native</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes, via Terraform</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); color: var(--muted)">In progress</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes, via bridge</td>
+</tr>
+<tr>
+<th scope="row" style="text-align: left; padding: 14px 20px; border-bottom: 1px solid var(--line); font-weight: 500">Outputs feed back into config</th>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--accent-soft); font-weight: 600">Yes, phased re-evaluation</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); color: var(--muted)">Partly: HCL references only</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); color: var(--muted)">No</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes, Output&lt;T&gt;</td>
+</tr>
+<tr>
+<th scope="row" style="text-align: left; padding: 14px 20px; border-bottom: 1px solid var(--line); font-weight: 500">Plan before apply</th>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--accent-soft); font-weight: 600">Yes</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes, via Terraform</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); color: var(--muted)">Partly</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes</td>
+</tr>
+<tr>
+<th scope="row" style="text-align: left; padding: 14px 20px; border-bottom: 1px solid var(--line); font-weight: 500">OS build and cloud in one expression</th>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--accent-soft); font-weight: 600">Yes, NixOS image → AMI</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); color: var(--muted)">No</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); color: var(--muted)">No</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line)">Yes</td>
+<td style="padding: 14px 20px; border-bottom: 1px solid var(--line); color: var(--muted)">No</td>
+</tr>
+<tr>
+<th scope="row" style="text-align: left; padding: 14px 20px; font-weight: 500">License</th>
+<td style="padding: 14px 20px; background: var(--accent-soft); font-weight: 600">Apache-2.0</td>
+<td style="padding: 14px 20px">MPL-2.0 / BUSL-1.1</td>
+<td style="padding: 14px 20px">MIT</td>
+<td style="padding: 14px 20px">LGPL-2.1</td>
+<td style="padding: 14px 20px">Apache-2.0 core</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p style="margin: 0"><a href="https://github.com/nivis-project/nivis/blob/HEAD/docs/COMPARISON.md">Read the full comparison, including CDK and CloudFormation</a></p>
+</section>
+
+<section id="projects" aria-labelledby="h-proj" style="background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line)">
+<div style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h2 id="h-proj" style="margin: 0; font-size: 38px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em">The Nivis projects</h2>
+<p style="margin: 0; color: var(--muted); max-width: 40em">Every mark is the same curve, <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 0.86em">h(θ) = a + b · cos kθ</span>, with different parameters.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 20px">
+<sc-for list="{{projects}}" as="p" hint-placeholder-count="6">
+<a href="{{p.url}}" style="text-decoration: none; color: var(--ink); background: var(--ground); border-radius: 14px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+<svg viewBox="-100 -100 200 200" width="64" height="64" aria-hidden="true">
+<path d="{{p.d0}}" style="fill: var(--mark-a)" fill-opacity="0.35"></path>
+<path d="{{p.d1}}" style="fill: var(--mark-b)" fill-opacity="0.35"></path>
+<path d="{{p.d2}}" style="fill: var(--mark-core)"></path>
+</svg>
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px">
+<span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 17px; font-weight: 500">{{p.name}}</span>
+<span style="font-size: 14px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px">{{p.status}}</span>
+</div>
+<div style="color: var(--muted); font-size: 17px">{{p.text}}</div>
+</a>
+</sc-for>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="h-docs" style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 40px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start">
+<h2 id="h-docs" style="margin: 0; font-size: 38px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em">Go deeper</h2>
+<p style="margin: 0; color: var(--muted); max-width: 30em">Nivis is early. The round trip works across providers, and AWS applies, updates, replaces and destroys today. Issues and experiments are welcome.</p>
+<a href="#start" style="text-decoration: none; background: var(--warm); color: var(--on-warm); padding: 13px 26px; border-radius: 999px; font-weight: 500">Try it in five minutes</a>
+</div>
+<ul style="margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap: 0 32px; font-size: 19px">
+<li style="border-top: 1px solid var(--line)"><a href="https://github.com/nivis-project/nivis/blob/HEAD/docs/INSTALL.md" style="display: block; padding: 13px 0; text-decoration: none">Installation</a></li>
+<li style="border-top: 1px solid var(--line)"><a href="https://github.com/nivis-project/nivis/blob/HEAD/docs/OVERVIEW.md" style="display: block; padding: 13px 0; text-decoration: none">Overview</a></li>
+<li style="border-top: 1px solid var(--line)"><a href="https://github.com/nivis-project/nivis/blob/HEAD/docs/DESIGN.md" style="display: block; padding: 13px 0; text-decoration: none">Design</a></li>
+<li style="border-top: 1px solid var(--line)"><a href="https://github.com/nivis-project/nivis/blob/HEAD/docs/DATASOURCES.md" style="display: block; padding: 13px 0; text-decoration: none">Data sources</a></li>
+<li style="border-top: 1px solid var(--line)"><a href="https://github.com/nivis-project/nivis/blob/HEAD/docs/IR-CONTRACT.md" style="display: block; padding: 13px 0; text-decoration: none">IR contract</a></li>
+<li style="border-top: 1px solid var(--line)"><a href="https://github.com/nivis-project/nivis-demos" style="display: block; padding: 13px 0; text-decoration: none">Demos</a></li>
+</ul>
+</section>
+
+</main>
+
+<footer style="border-top: 1px solid var(--line)">
+<div style="max-width: 1120px; margin: 0 auto; padding: 32px 24px 48px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; font-size: 16px; color: var(--muted)">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg viewBox="-100 -100 200 200" width="26" height="26" aria-hidden="true">
+<path d="{{m.l1}}" style="fill: var(--mark-b)" fill-opacity="0.3"></path>
+<path d="{{m.l2}}" style="fill: var(--mark-a)" fill-opacity="0.3"></path>
+<path d="{{m.core}}" style="fill: var(--mark-core)"></path>
+</svg>
+<span>Nivis · Apache-2.0 · nivis.tf</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 4px 24px">
+<a href="https://github.com/nivis-project" style="padding: 10px 0">GitHub</a>
+<a href="https://github.com/nivis-project/nivis/issues" style="padding: 10px 0">Issues</a>
+</div>
+</div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["auto","light","dark"],"default":"auto","section":"Theme"},"lobes":{"editor":"int","default":3,"min":2,"max":7,"section":"Mark"},"amplitude":{"editor":"range","default":1,"min":0,"max":2.5,"step":0.05,"section":"Mark"},"$preview":{"width":1280,"height":6900}}'>
+class Component extends DCLogic {
+  // h(θ) = a + b · cos kθ, with b = a · amp / (k² + 1); amp = 1 gives flat sides.
+  blob(a, k, amp, rotDeg) {
+    var b = a * amp / (k * k + 1);
+    var rot = rotDeg * Math.PI / 180;
+    var n = 120, d = '';
+    for (var i = 0; i < n; i++) {
+      var t = 2 * Math.PI * i / n;
+      var r = a + b * Math.cos(k * t);
+      d += (i ? 'L' : 'M') + (r * Math.cos(t + rot)).toFixed(1) + ' ' + (r * Math.sin(t + rot)).toFixed(1);
+    }
+    return d + 'Z';
+  }
+  renderVals() {
+    var self = this;
+    var k = this.props.lobes ?? 3;
+    var amp = this.props.amplitude ?? 1;
+    var m = {
+      l0: this.blob(84, k, amp, -24),
+      l1: this.blob(80, k, amp, -11),
+      l2: this.blob(78, k, amp, 12),
+      l3: this.blob(74, k, amp, 25),
+      core: this.blob(64, k, amp, 0)
+    };
+    var gh = 'https://github.com/nivis-project/';
+    var projects = [
+      { name: 'nivis', status: 'early but real', k: 3, amp: amp, rot: 0, text: 'The library and executor. Provider resources as Nix values, applied to a fixpoint.' },
+      { name: 'registry', status: 'alpha', k: 4, amp: 1.2, rot: 45, text: 'A browsable catalog of OpenTofu-compatible providers with Nix-native documentation.' },
+      { name: 'nivis-tunnel', status: 'proof of concept', k: 2, amp: 1.6, rot: 0, text: 'Deploy NixOS closures to machines with no inbound ports, over a Noise-encrypted relay.' },
+      { name: 'nivis-demos', status: 'examples', k: 5, amp: 1.4, rot: -18, text: 'Small reproducible stacks: state bootstrap, one NixOS workload on two clouds, tunnel deploys.' },
+      { name: 'terraform-provider-nivis-tunnel', status: 'provider', k: 2, amp: 1.6, rot: 90, text: 'Terraform provider for the Nivis deployment tunnel.' },
+      { name: 'terraform-provider-hcloudimage', status: 'provider', k: 3, amp: 1.8, rot: 180, text: 'Upload raw disk images to Hetzner Cloud from Terraform or OpenTofu.' }
+    ].map(function (p) {
+      return {
+        name: p.name, status: p.status, text: p.text, url: gh + p.name,
+        d0: self.blob(84, p.k, p.amp, p.rot - 16),
+        d1: self.blob(80, p.k, p.amp, p.rot + 16),
+        d2: self.blob(64, p.k, p.amp, p.rot)
+      };
+    });
+    var theme = (this.state && this.state.theme) || this.props.theme || 'auto';
+    var toggleTheme = function () {
+      var dark = theme === 'dark' || (theme === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      self.setState({ theme: dark ? 'light' : 'dark' });
+    };
+    return { m: m, projects: projects, theme: theme, toggleTheme: toggleTheme };
+  }
+}
+</script>
+</body>
+</html>
