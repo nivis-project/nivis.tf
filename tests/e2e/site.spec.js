@@ -129,6 +129,48 @@ test.describe("theme", () => {
     expect(await palette(page)).toBe("light");
   });
 
+  test("toggling to the system's own palette returns to following it", async ({ page }) => {
+    // The one-way door this guards against: a stored choice sets data-theme on
+    // every load, so the prefers-color-scheme rule can never match again. Once
+    // a reader had touched the control they were pinned for good.
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    expect(await page.evaluate(() => localStorage.getItem("nivis-theme"))).toBeNull();
+
+    await page.locator("[data-theme-switch]").click();   // dark system -> light
+    expect(await palette(page)).toBe("light");
+    expect(await page.evaluate(() => localStorage.getItem("nivis-theme"))).toBe("light");
+
+    await page.locator("[data-theme-switch]").click();   // back to the system's dark
+    expect(await palette(page)).toBe("dark");
+    expect(
+      await page.evaluate(() => localStorage.getItem("nivis-theme")),
+      "returning to the system's palette must clear the stored choice"
+    ).toBeNull();
+    expect(
+      await page.evaluate(() => document.documentElement.getAttribute("data-theme"))
+    ).toBeNull();
+
+    await page.reload();
+    expect(await palette(page)).toBe("dark");
+    expect(await page.evaluate(() => document.documentElement.getAttribute("data-theme"))).toBeNull();
+  });
+
+  test("after returning to the system, a change in the system is followed", async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.goto("/");
+    await page.locator("[data-theme-switch]").click();   // -> light, stored
+    await page.locator("[data-theme-switch]").click();   // -> back to system, cleared
+
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.reload();
+    expect(await palette(page)).toBe("light");
+
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.reload();
+    expect(await palette(page)).toBe("dark");
+  });
+
   test("no flash: the stored choice is in effect at first paint", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");

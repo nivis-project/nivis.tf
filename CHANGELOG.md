@@ -81,6 +81,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Trying the theme button once opted you out of your system colour scheme
+  permanently. Toggling back to the palette your system already prefers now
+  clears the stored choice instead of pinning it, so the same button is also the
+  way back to following your system.
+
 - Eleven checks inspected a build that is never deployed, because they omitted
   the minification the deployment uses. One of them, the link checker, was
   matching nothing at all and would have passed indefinitely while verifying

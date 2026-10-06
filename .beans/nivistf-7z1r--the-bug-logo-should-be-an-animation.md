@@ -6,6 +6,7 @@ type: task
 priority: normal
 created_at: 2026-10-06T15:24:27Z
 updated_at: 2026-10-06T15:50:41Z
+openspec-link: x
 ---
 
 try this:
