@@ -93,6 +93,21 @@
 
           hugo-version-single-source = script "hugo-version-single-source" [ pkgs.gnugrep ];
 
+          # The fixtures build real Hugo sites, which needs a writable tree.
+          unit =
+            pkgs.runCommand "check-unit"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pkgs.python3
+                ];
+              }
+              ''
+                cp -r ${self} src && chmod -R u+w src
+                bash src/tests/checks/unit.sh src
+                touch "$out"
+              '';
+
           build = pkgs.runCommand "check-build" { nativeBuildInputs = [ pkgs.hugo ]; } ''
             # Hugo writes a build lock next to the source, so the read-only
             # store path has to be copied before it can be built.

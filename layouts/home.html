@@ -1,0 +1,11 @@
+{{ define "main" }}
+{{- range .Params.sections }}
+{{- $name := . }}
+{{- $tpl := printf "sections/%s.html" $name }}
+{{- if templates.Exists (printf "_partials/%s" $tpl) }}
+{{- partial $tpl $ }}
+{{- else }}
+{{- errorf "section %q is listed in content/_index.md but has no template at layouts/_partials/sections/%s.html" $name $name }}
+{{- end }}
+{{- end }}
+{{ end }}

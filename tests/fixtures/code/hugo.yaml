@@ -1,0 +1,21 @@
+baseURL: "https://example.org/"
+title: "fixture"
+disableKinds: [taxonomy, term, RSS, sitemap]
+markup:
+  highlight:
+    noClasses: false
+module:
+  mounts:
+    # The fixture's own layouts come first so it can override one template.
+    # Everything it does not provide falls through to the project's real
+    # layouts, which is the point: the partial under test is the real one.
+    - source: layouts
+      target: layouts
+    - source: ../../../layouts
+      target: layouts
+    - source: ../../../i18n
+      target: i18n
+    - source: snippets
+      target: assets/snippets
+    - source: content
+      target: content

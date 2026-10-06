@@ -19,7 +19,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `hugo-math`                  | `math.Cos` / `math.Sin` / `math.Pi` compute the mark curve correctly | present |
 | `hugo-version-single-source` | the version number appears only in `.hugo-version` | present |
 | `build`                      | the site builds with no Hugo warnings             | present |
-| `unit`                       | Hugo template assertions over fixture sites       | planned |
+| `unit`                       | Hugo template assertions over fixture sites       | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -42,6 +42,37 @@ run against a deliberate violation before being trusted.
 | `hugo-math`                  | overriding `EXPECTED_PATH_DATA` to a wrong value |
 | `hugo-version-single-source` | a fixture tree with the version copied into a second file |
 | `build`                      | restoring the deprecated `languageCode` key, which makes Hugo warn |
+| `unit`                       | three separate probes, see below               |
+
+### The fixture harness
+
+A fixture is a miniature Hugo site under `tests/fixtures/<name>/` that mounts the
+project's **real** `layouts/` and `i18n/`, and supplies only its own content.
+What is tested is therefore what Hugo actually does with the real templates.
+Template logic errors (a wrong range variable, a missing `with`) only ever show
+up in output, which is why these build a site rather than parse a template.
+
+Mount order matters: a fixture's own `layouts` mount must come first so it can
+override one template, with the project's layouts behind it for everything else.
+
+| Fixture | Proves |
+|-------------------|--------------------------------------------------------|
+| `reorder`         | section order follows content, a repeated section renders twice, an absent one does not render |
+| `code`            | a rendered code block equals its source file exactly, highlighted with CSS classes and no inline styles |
+| `unknown-section` | a section named in content with no template fails the build, naming the section |
+| `missing-snippet` | a referenced snippet that does not exist fails the build, naming the snippet |
+
+The last two are negative fixtures: the check asserts they **fail**. A check
+that only ever sees passing input is a check that has never been tested.
+
+`unit` was proven to bite three ways: reordering the `reorder` fixture's list,
+making `code.html` lossy so the rendered text no longer matches its source, and
+making the `unknown-section` fixture resolvable so its build stops failing.
+
+One probe was rejected as too weak: editing the snippet file itself does not
+trip the byte-for-byte assertion, because both sides of the comparison move
+together. That is correct behaviour for a faithfulness test, but it means the
+probe proves nothing. Corrupting the renderer is the probe that counts.
 
 `hugo-math` renders one point of the mark curve and compares it to a literal.
 The expected value matches the generator in `nivis-mockup-reference.html` to the

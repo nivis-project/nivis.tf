@@ -1,0 +1,11 @@
+{{- $file := .file -}}
+{{- $lang := .lang | default "text" -}}
+{{- $path := printf "snippets/%s" $file -}}
+{{- $res := resources.Get $path -}}
+{{- if not $res -}}
+{{- errorf "snippet %q is referenced but does not exist at snippets/%s" $file $file -}}
+{{- end -}}
+<figure class="code">
+{{- with .label }}<figcaption>{{ . }}</figcaption>{{ end }}
+{{- transform.Highlight (strings.TrimRight "\n" $res.Content) $lang }}
+</figure>

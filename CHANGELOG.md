@@ -19,3 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The gate proves up front that the pinned Hugo is the extended build and can
   compute the mark curve, so the mark work cannot be blocked by a late
   surprise.
+- The page is assembled from an ordered section list in `content/_index.md`.
+  Reordering or removing a section is a content edit, and a section named with
+  no template fails the build instead of vanishing silently.
+- Interface strings live in `i18n/en.yaml`, so a second language needs no
+  template change.
+- Code samples live in `snippets/` as files in their own language and render
+  byte for byte, highlighted with CSS classes.
