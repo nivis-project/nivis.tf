@@ -1,16 +1,24 @@
 # Parameters for the nested series. See section "How the mark is built" in the
 # brand brief, and the `mark` capability.
 #
-#   ratio   A/B, the only parameter that changes the outline. B is fixed at 1.
+#   lobes   how many lobes the curve has. Optional, 3 by default, which is what
+#           the brand brief fixes for the Nivis mark. This is the parameter that
+#           makes a project's mark its own shape rather than the same shape at a
+#           different depth.
+#   ratio   A/B, how deep the lobes are. B is fixed at 1.
 #   copies  how many nested copies to draw
 #   rot     degrees of rotation between one copy and the next
 #   fit     adjusts the nesting scale away from the exact fit. 0 is exact.
 #           Bounded at 0.2: above it the scale exceeds 1 and the nesting
-#           inverts, drawing each copy larger than its parent.
+#           inverts, drawing each copy larger than its parent. A rotation that
+#           is a whole number of the curve's periods (360/lobes degrees) is
+#           rejected: it leaves the curve unchanged, so every copy is drawn at
+#           its parent's size and the series disappears into one shape.
 #
 # The brief's defaults are ratio 12, 4 copies, 20 degrees, fit 0. The
 # per-project values are provisional and the maintainer's; see README.
 nivis:
+  lobes: 3
   ratio: 12
   copies: 4
   rot: 20
@@ -32,5 +40,6 @@ nivis:
       rot:     [0, 60]
       fit:     [-1, 0.2]
       opacity: [0.1, 0.45]
-registry:  { ratio: 9.5, copies: 5, rot: 28,  fit: -0.15 }
-tunnel:    { ratio: 7,   copies: 3, rot: 45,  fit: 0.1 }
+
+registry:  { lobes: 5, ratio: 9.5, copies: 5, rot: 28,  fit: -0.15 }
+tunnel:    { lobes: 2, ratio: 7,   copies: 3, rot: 45,  fit: 0.1 }

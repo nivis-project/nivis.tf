@@ -24,8 +24,10 @@
   var range = cfg.range;
   var keys = ["ratio", "copies", "rot", "fit", "opacity"];
 
+  // The lobe count arrives as data like everything else, so the script cannot
+  // disagree with the build about what shape it is drawing.
   function R(a, t) {
-    return a + Math.cos(3 * t);
+    return a + Math.cos(cfg.rest.lobes * t);
   }
 
   // The same minimisation the build performs, over the same sample count, which

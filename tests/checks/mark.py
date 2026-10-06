@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Verify every generated mark against an independent evaluation of the curve.
 
-    h(theta) = A + cos(3*theta)          B is fixed at 1
+    h(theta) = A + cos(k*theta)          B is fixed at 1, k is the lobe count
     copy i   = rotated i*phi, scaled step^i
     step     = perfectFit(A, phi) ** (1 - 5*fit)
     perfectFit = min over theta of R(theta)/R(theta - phi)
@@ -31,28 +31,34 @@ from htmlnorm import normalise
 FIT_SAMPLES = 720     # must match layouts/_partials/mark-fit.html
 PATH_POINTS = 120     # must match layouts/_partials/mark.html
 FIT_BOUND = 0.2       # above this, step > 1 and the nesting inverts
+# A rotation of a whole period leaves the curve unchanged, so the scale is 1 and
+# every copy is drawn at its parent's size. Not tested against 1 exactly: the two
+# cosines are mathematically equal there but are computed separately, so the
+# ratio lands a few bits under. This is a tolerance for that arithmetic, not a
+# visibility threshold. Must match layouts/_partials/mark.html.
+DEGENERATE_STEP = 0.999
 
 
-def R(a, t):
-    return a + math.cos(3 * t)
+def R(a, k, t):
+    return a + math.cos(k * t)
 
 
-def perfect_fit(a, phi):
+def perfect_fit(a, k, phi):
     m = float("inf")
     for i in range(FIT_SAMPLES):
         t = 2 * math.pi * i / FIT_SAMPLES
-        child = R(a, t - phi)
+        child = R(a, k, t - phi)
         if child > 1e-4:
-            m = min(m, R(a, t) / child)
+            m = min(m, R(a, k, t) / child)
     return m
 
 
-def copy_points(a, rot, s):
+def copy_points(a, k, rot, s):
     """The rounded coordinates of one copy, in order."""
     out = []
-    for k in range(PATH_POINTS + 1):
-        t = 2 * math.pi * k / PATH_POINTS
-        h = R(a, t)
+    for i in range(PATH_POINTS + 1):
+        t = 2 * math.pi * i / PATH_POINTS
+        h = R(a, k, t)
         out.append((round(s * h * math.cos(t + rot), 1),
                     round(-(s * h * math.sin(t + rot)), 1)))
     return out
@@ -134,6 +140,7 @@ def parse_marks(text):
         if not isinstance(p, dict) or "ratio" not in p:
             continue
         marks[name] = dict(
+            lobes=int(p.get("lobes", 3)),
             ratio=float(p["ratio"]), copies=int(p["copies"]),
             rot=float(p["rot"]), fit=float(p["fit"]),
         )
@@ -167,6 +174,7 @@ def check_animated(path):
     cfg = json.loads(html_mod.unescape(m.group(1)))
     rest = cfg["rest"]
     a, copies, fit = float(rest["ratio"]), int(rest["copies"]), float(rest["fit"])
+    k = int(rest["lobes"])
     phi = math.radians(float(rest["rot"]))
     steps = int(cfg["rampSteps"])
 
@@ -177,10 +185,10 @@ def check_animated(path):
         return [f"the animated mark draws {len(paths)} copies, declares {copies}"]
 
     errors = []
-    step = perfect_fit(a, phi) ** (1 - 5 * fit)
+    step = perfect_fit(a, k, phi) ** (1 - 5 * fit)
     scale = 170.0 / (a + 1.0)
     for i, (got_d, got_fill, got_op) in enumerate(paths):
-        want = copy_points(a, phi * i, scale * step ** i)
+        want = copy_points(a, k, phi * i, scale * step ** i)
         got = parse_points(got_d)
         if got != want:
             where = next((j for j, (g, w) in enumerate(zip(got, want)) if g != w), None)
@@ -235,14 +243,18 @@ def main():
             errors.append(f"{name!r} is rendered but absent from data/marks.yaml")
             continue
         p = marks[name]
-        a, fit = p["ratio"], p["fit"]
+        a, fit, k = p["ratio"], p["fit"], p["lobes"]
         phi = math.radians(p["rot"])
         if fit > FIT_BOUND:
             errors.append(f"{name}: fit {fit} is above the {FIT_BOUND} bound")
             continue
-        step = perfect_fit(a, phi) ** (1 - 5 * fit)
-        if step > 1.0 + 1e-9:
-            errors.append(f"{name}: step is {step:.4f}; above 1 the nesting inverts")
+        step = perfect_fit(a, k, phi) ** (1 - 5 * fit)
+        if step >= DEGENERATE_STEP:
+            errors.append(
+                f"{name}: step is {step:.4f}, at or above {DEGENERATE_STEP}. "
+                f"Every copy is drawn at its parent's size, so the series is "
+                f"not visible"
+            )
 
         paths = re.findall(r'<path d="([^"]+)" fill="([^"]+)" fill-opacity="([^"]+)"', svg)
         if len(paths) != copies:
@@ -253,7 +265,7 @@ def main():
         extents = []
         for i, (got_d, got_fill, got_op) in enumerate(paths):
             s = scale * step ** i
-            want = copy_points(a, phi * i, s)
+            want = copy_points(a, k, phi * i, s)
             got = parse_points(got_d)
             if got != want:
                 where = next((j for j, (g, w) in enumerate(zip(got, want)) if g != w), None)
@@ -265,16 +277,30 @@ def main():
                 errors.append(
                     f"{name}/{copies} copy {i}: fill is {got_fill!r}, want {want_fill!r}"
                 )
-            extents.append(max(max(abs(x), abs(y)) for x, y in got))
+            # How far the copy reaches from the centre. NOT max(|x|, |y|):
+            # that is an axis-aligned box, every copy is drawn rotated, and a
+            # box is not rotation-invariant. A two-lobed copy rotated back
+            # towards an axis has a larger box than its parent while sitting
+            # entirely inside it, so the box measure failed correct marks.
+            extents.append(max(math.hypot(x, y) for x, y in got))
             compared += 1
 
         # Copies must actually nest: each is contained within the one before.
         for i in range(1, len(extents)):
             if extents[i] > extents[i - 1] + 1e-6:
                 errors.append(
-                    f"{name}/{copies}: copy {i} extends further than copy {i-1} "
-                    f"({extents[i]:.1f} vs {extents[i-1]:.1f}); the nesting is inverted"
+                    f"{name}/{copies}: copy {i} reaches further from the centre "
+                    f"than copy {i-1} ({extents[i]:.1f} vs {extents[i-1]:.1f}); "
+                    f"the nesting is inverted"
                 )
+
+    counts = {p["lobes"] for p in marks.values()}
+    if len(counts) < 2:
+        errors.append(
+            f"every mark has the same lobe count {counts}, so the lobe count is "
+            f"not being exercised and this check is testing one case while "
+            f"reporting several"
+        )
 
     for n in range(2, int(span["max_copies"]) + 1):
         if ramp_steps % (n - 1) != 0:

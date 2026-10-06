@@ -209,30 +209,38 @@ test("the animation stops off-screen and resumes on return", async ({ browser })
 });
 
 test("the copies stay nested for the whole sweep", async ({ page }) => {
+  test.setTimeout(90000);
   await page.goto("/");
   const cfg = JSON.parse(
     await page.getAttribute(SELECTOR, "data-mark-animation")
   );
 
-  // Sampled across the cycle rather than at one moment: the nesting scale
-  // depends on the rotation as well as the shape, so a breach would appear at
-  // one phase and not another.
-  for (let i = 0; i < 8; i++) {
-    await page.waitForTimeout(250);
+  // Sampled across a whole cycle, not across the first couple of seconds. The
+  // ease-in holds the parameters near the resting pose at first, so a short
+  // window never reaches the top of the sweep, which is the only place this
+  // test has anything interesting to look at: there `fit` hits 0.2, the
+  // exponent `1 - 5 * fit` hits zero, and every copy is drawn at the same size.
+  const samples = 12;
+  const interval = Math.ceil((cfg.cycle * 1000) / samples);
+
+  for (let i = 0; i < samples; i++) {
+    await page.waitForTimeout(interval);
     const frame = await page.$$eval(`${SELECTOR} path`, (ps) =>
       ps
         .filter((p) => p.getAttribute("display") !== "none")
         .map((p) => {
-          const b = p.getBBox();
-          return {
-            extent: Math.max(
-              Math.abs(b.x),
-              Math.abs(b.y),
-              Math.abs(b.x + b.width),
-              Math.abs(b.y + b.height)
-            ),
-            fill: p.getAttribute("fill"),
-          };
+          // How far the copy reaches from the centre. NOT getBBox: that is an
+          // axis-aligned box, every copy is drawn rotated, and a rotated
+          // outline's box depends on its angle. With every copy at the same
+          // size the boxes swing by more than this test's tolerance while the
+          // radii are identical, so the box measure fails a correct mark.
+          const len = p.getTotalLength();
+          let far = 0;
+          for (let s = 0; s <= 64; s++) {
+            const q = p.getPointAtLength((len * s) / 64);
+            far = Math.max(far, Math.hypot(q.x, q.y));
+          }
+          return { extent: far, fill: p.getAttribute("fill") };
         })
     );
     expect(frame.length, "copy count stays within its declared range").toBeGreaterThanOrEqual(
@@ -242,7 +250,8 @@ test("the copies stay nested for the whole sweep", async ({ page }) => {
     for (let j = 1; j < frame.length; j++) {
       expect(
         frame[j].extent,
-        `sample ${i}: copy ${j} is larger than copy ${j - 1}, so the nesting has inverted`
+        `sample ${i}: copy ${j} reaches further from the centre than copy ${j - 1}, ` +
+          `so the nesting has inverted`
       ).toBeLessThanOrEqual(frame[j - 1].extent + 0.5);
     }
     for (const p of frame) {

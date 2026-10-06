@@ -1,7 +1,11 @@
 {{- /*
   perfectFit: the largest scale at which a copy, rotated by phi, still fits
   inside its parent. The minimum over theta of R(theta)/R(theta-phi), with
-  R(theta) = A + cos(3*theta).
+  R(theta) = A + cos(k*theta).
+
+  When phi is a whole number of the curve's periods, R(theta-phi) is R(theta)
+  for every theta and this returns exactly 1. The caller rejects that, because
+  a scale of 1 draws every copy at its parent's size.
 
   The sample count comes from the caller, so that the one place it is written
   is the one place the browser also reads it from. perfectFit is a minimisation
@@ -12,14 +16,14 @@
   Measured at about 19 ms per mark including path generation, linear in the
   number of marks. No caching or coarsening needed.
 */ -}}
-{{- $a := .a -}}{{- $phi := .phi -}}
+{{- $a := .a -}}{{- $phi := .phi -}}{{- $k := int .lobes -}}
 {{- $n := int .samples -}}
 {{- $min := 1000000.0 -}}
 {{- range $i := seq 0 (sub $n 1) -}}
   {{- $t := div (mul (mul 2 math.Pi) (float $i)) (float $n) -}}
-  {{- $child := add $a (math.Cos (mul 3 (sub $t $phi))) -}}
+  {{- $child := add $a (math.Cos (mul $k (sub $t $phi))) -}}
   {{- if gt $child 0.0001 -}}
-    {{- $r := div (add $a (math.Cos (mul 3 $t))) $child -}}
+    {{- $r := div (add $a (math.Cos (mul $k $t))) $child -}}
     {{- if lt $r $min -}}{{- $min = $r -}}{{- end -}}
   {{- end -}}
 {{- end -}}

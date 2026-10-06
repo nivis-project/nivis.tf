@@ -1,7 +1,9 @@
 {{- /*
   The Nivis mark: nested self-similar copies of one curve.
 
-    h(theta) = A + B*cos(3*theta),  B fixed at 1, so only the ratio A/B varies
+    h(theta) = A + B*cos(k*theta),  B fixed at 1, so the ratio A/B is the only
+                                    control over how deep the lobes are
+    k is the mark's own lobe count, 3 by default
     copy i is rotated by i*phi and scaled by step^i
     step = perfectFit(A, phi) ^ (1 - 5*fit)
 
@@ -29,6 +31,7 @@
 {{- errorf "mark %q has no parameters in data/marks.yaml" $name -}}
 {{- end -}}
 {{- $span := hugo.Data.tokens.mark_span -}}
+{{- $lobes := int (default 3 $p.lobes) -}}
 {{- $a := float $p.ratio -}}
 {{- $copies := int (default $p.copies .copies) -}}
 {{- $fit := float $p.fit -}}
@@ -83,7 +86,7 @@
     {{- errorf "mark %q range %q runs %v to %v, which is not a range" $name $k (index $v 0) (index $v 1) -}}
     {{- end -}}
   {{- end -}}
-  {{- $rest := dict "ratio" $a "copies" $copies "rot" (float $p.rot) "fit" $fit "opacity" $opacity -}}
+  {{- $rest := dict "lobes" $lobes "ratio" $a "copies" $copies "rot" (float $p.rot) "fit" $fit "opacity" $opacity -}}
   {{- $data = dict
         "rest" $rest
         "range" $r
@@ -96,8 +99,26 @@
       | jsonify -}}
 {{- end -}}
 
-{{- $pf := partial "mark-fit.html" (dict "a" $a "phi" $phi "samples" $fitSamples) -}}
+{{- $pf := partial "mark-fit.html" (dict "a" $a "phi" $phi "lobes" $lobes "samples" $fitSamples) -}}
 {{- $step := math.Pow $pf (sub 1.0 (mul 5.0 $fit)) -}}
+
+{{- /* A rotation of a whole period leaves the curve unchanged, so the exact fit
+       is 1 and every copy is drawn at its parent's size: the series renders as
+       one shape with its copies hidden inside it. Stated as a bound on the
+       scale rather than as arithmetic on the rotation, because the scale is
+       what matters and it stays true if the curve ever changes.
+
+       The bound is 0.999 rather than 1 because at a whole period the two
+       cosines are mathematically equal but are computed separately, so the
+       ratio lands a few bits under 1 and an exact test never fires. It is a
+       tolerance for that arithmetic and nothing more: a rotation one degree
+       off the period gives a scale of 0.9975 and still builds, which is a
+       nesting almost nobody can see. Where the line between tight and
+       invisible belongs is taste, and this check does not try to settle it. */ -}}
+{{- $degenerate := 0.999 -}}
+{{- if ge $step $degenerate -}}
+{{- errorf "mark %q has a nesting scale of %.4f, at or above the %v bound. It rotates %v degrees between copies against a %v degree period, so every copy is drawn at its parent's size and the nesting disappears" $name $step $degenerate $p.rot (div 360.0 (float $lobes)) -}}
+{{- end -}}
 {{- $scale := div 170.0 (add $a 1.0) -}}
 <svg viewBox="-200 -200 400 400"
   {{- with .size }} width="{{ . }}" height="{{ . }}"{{ end }}
@@ -110,7 +131,7 @@
 {{- $d := "" -}}
 {{- range $k := seq 0 $points -}}
   {{- $t := div (mul (mul 2 math.Pi) (float $k)) (float $points) -}}
-  {{- $h := add $a (math.Cos (mul 3 $t)) -}}
+  {{- $h := add $a (math.Cos (mul $lobes $t)) -}}
   {{- $x := mul $s (mul $h (math.Cos (add $t $rot))) -}}
   {{- $y := mul $s (mul $h (math.Sin (add $t $rot))) -}}
   {{- $d = printf "%s%s%.1f %.1f" $d (cond (eq $k 0) "M" "L") $x (mul -1.0 $y) -}}

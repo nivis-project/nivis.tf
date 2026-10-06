@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A mark states its own number of lobes. `registry` is five-lobed and `tunnel`
+  two-lobed again, as they were before the mark became a nested series, so a
+  project's mark is its own shape rather than the Nivis shape at a different
+  depth. A mark that states no count is three-lobed, so nothing that exists
+  today changes. The Nivis mark is untouched.
 - The mark in the hero animates. Its shape, rotation, nesting and copy count
   move through a slow twenty second cycle. The animation starts from the mark
   the build drew and eases out from there, so nothing jumps when the script
@@ -101,6 +106,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- A rotation that is a whole number of the curve's periods is rejected at build
+  time. Such a rotation leaves the curve unchanged, so every copy was drawn at
+  its parent's size and the mark silently lost its nesting.
+- Whether a copy is contained in its parent is measured from the centre rather
+  than by an axis-aligned box. A box is not rotation-invariant and every copy is
+  drawn rotated, so the old measure could reject a correctly nested mark.
 - The favicon washed out to grey. Every copy of the new nested mark is drawn at
   25% opacity, which the brand brief draws on a background, and the favicon had
   none, so it composited against the browser's own chrome.

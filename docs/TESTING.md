@@ -856,3 +856,67 @@ The scan now covers `assets/js` as well, and its negative fixture includes a
 colour built from parts rather than written out, with an assertion that
 specifically that line was caught. A fixture of five literals would have let the
 one realistic case through.
+
+### Per-mark lobe counts, and two checks that were quietly wrong
+
+The curve is `h(theta) = A + cos(k * theta)`. `k` became a per-mark parameter so
+each project gets its own shape rather than the same shape at a different depth.
+Opening that parameter up exposed two defects, and finding each one took a test
+that disagreed with me.
+
+**An exact test on 1 never fires.** A rotation that is a whole number of the
+curve's periods leaves the curve unchanged, so the exact fit is 1 and every copy
+is drawn at its parent's size: the series renders as one shape with its copies
+hidden inside it. The build now rejects that. The first version tested
+`step >= 1` and reported four clean builds where it expected four rejections:
+
+```
+lobes=2 rot=180   builds cleanly
+lobes=5 rot=72    builds cleanly
+lobes=4 rot=90    builds cleanly
+lobes=3 rot=120   builds cleanly
+```
+
+At a whole period the two cosines are mathematically equal but are computed
+separately, so the ratio lands a few bits under 1. The bound is 0.999, and it is
+a tolerance for that arithmetic rather than a judgement about visibility: a
+rotation one degree off the period gives 0.9975 and still builds.
+
+With the count fixed at three the bad rotations were 0, 120 and 240, which
+nobody types. With per-mark counts, 90 on a four-lobed mark and 180 on a
+two-lobed one are the first round numbers anyone reaches for.
+
+**Containment was measured as a box.** `mark.py` compared copies by
+`max(|x|, |y|)`, an axis-aligned box. That is not rotation-invariant and every
+copy is drawn rotated, so a copy rotated back towards an axis can measure larger
+than its parent while sitting entirely inside it.
+
+Sweeping lobe counts 2 to 6, ratios 3 to 12, rotations 5 to 90 degrees and the
+five fit values in use, **384 parameter sets make the box measure reject a mark
+whose copies are strictly nested by radius**. Two lobes at ratio 3, rotated 30
+degrees, at the fit bound: the box inverts at copy 3, 170.0 against 158.7, while
+every radius strictly decreases.
+
+The measure is now the largest distance from the centre, which is
+`scale * (A + 1)` for every copy whatever its rotation, and is therefore exactly
+what containment means here.
+
+**Two claims I made about this were wrong, and the checks caught both.** The
+first said the shipped two-lobed mark would fail the box measure. Measured, it
+passes by 0.38 units: 139.04 against 138.66. The second said the browser suite's
+version of the test was latently flaky, because at the top of the hero's sweep
+`fit` reaches 0.2, `step` is exactly 1, and the boxes swing while the radii are
+equal. They do swing, but the hero's parameters all move on one phase, so `fit`
+reaches 0.2 only when the rotation is simultaneously 60 degrees, and at 60
+degrees with three lobes every box is equal. Running the old measure over a full
+cycle passes.
+
+Both measures changed anyway, because the combination becomes reachable the
+moment the hero's lobe count or its ranges are retuned. The distinction between
+removing a latent defect and fixing a live failure is worth keeping straight,
+and the only reason it could be kept straight here is that the claims were run
+rather than reasoned about.
+
+The browser test's sampling went from two seconds to a full twenty second cycle
+in the same change. The short window was why the question could not be answered
+before: it never reached the part of the sweep it was asking about.
