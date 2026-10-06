@@ -7,3 +7,4 @@
 /playwright-report/
 /tests/fixtures/*/out/
 /tests/fixtures/*/resources/
+/static/fonts/

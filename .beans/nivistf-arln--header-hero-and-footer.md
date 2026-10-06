@@ -1,11 +1,11 @@
 ---
 # nivistf-arln
 title: Header, hero and footer
-status: todo
+status: in-progress
 type: epic
 priority: normal
 created_at: 2026-10-06T13:02:12Z
-updated_at: 2026-10-06T13:02:41Z
+updated_at: 2026-10-06T14:12:00Z
 parent: nivistf-zsjy
 blocked_by:
     - nivistf-nr5s

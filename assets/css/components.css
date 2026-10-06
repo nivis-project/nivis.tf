@@ -1,0 +1,68 @@
+.button {
+  display: inline-block;
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  font-weight: var(--weight-medium);
+}
+
+.button-primary {
+  background: var(--warm);
+  color: var(--on-warm);
+  padding: 13px 26px;
+}
+
+.button-outline {
+  border: 1.5px solid var(--accent);
+  color: var(--ink);
+  padding: 9px 18px;
+}
+
+.pill {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-label);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 5px 14px;
+}
+
+.card {
+  background: var(--ground);
+  border-radius: var(--radius-card);
+  padding: var(--pad-card);
+}
+
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-label);
+  color: var(--muted);
+}
+
+figure.code {
+  margin: 0;
+  min-width: 0;
+}
+
+figure.code pre {
+  margin: 0;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-code);
+  line-height: var(--leading-code);
+  padding: 18px 22px;
+  border-radius: var(--radius-code);
+  overflow-x: auto;
+}
+
+figure.code pre code {
+  font-size: inherit;
+  white-space: pre;
+}
+
+figure.code figcaption {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-label);
+  color: var(--muted);
+  margin-bottom: 8px;
+}

@@ -15,6 +15,66 @@
 
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
 
+      # The design uses four Hind weights and two IBM Plex Mono weights, and no
+      # others. Both typefaces are packaged in nixpkgs as TrueType, so the build
+      # converts them to woff2 rather than the repository carrying binaries:
+      # a font update becomes a lock bump, and licences stay tracked by nixpkgs.
+      # Listing the weights explicitly means adding one is a decision somebody
+      # makes, not a side effect of a package update.
+      fontFaces = [
+        {
+          family = "Hind";
+          weight = 300;
+          file = "Hind-Light";
+        }
+        {
+          family = "Hind";
+          weight = 400;
+          file = "Hind-Regular";
+        }
+        {
+          family = "Hind";
+          weight = 500;
+          file = "Hind-Medium";
+        }
+        {
+          family = "Hind";
+          weight = 600;
+          file = "Hind-SemiBold";
+        }
+        {
+          family = "IBM Plex Mono";
+          weight = 400;
+          file = "IBMPlexMono-Regular";
+        }
+        {
+          family = "IBM Plex Mono";
+          weight = 500;
+          file = "IBMPlexMono-Medium";
+        }
+      ];
+
+      siteFonts =
+        pkgs:
+        pkgs.runCommand "nivis-tf-fonts" { nativeBuildInputs = [ pkgs.woff2 ]; } (
+          ''
+            mkdir -p "$out"
+          ''
+          + nixpkgs.lib.concatMapStrings (f: ''
+            src=""
+            for d in ${pkgs.google-fonts}/share/fonts/truetype ${pkgs.ibm-plex}/share/fonts/truetype; do
+              if [ -f "$d/${f.file}.ttf" ]; then src="$d/${f.file}.ttf"; fi
+            done
+            if [ -z "$src" ]; then
+              echo "font ${f.file}.ttf not found in google-fonts or ibm-plex" >&2
+              exit 1
+            fi
+            cp "$src" "$TMPDIR/${f.file}.ttf"
+            woff2_compress "$TMPDIR/${f.file}.ttf"
+            cp "$TMPDIR/${f.file}.woff2" "$out/${f.file}.woff2"
+          '') fontFaces
+        );
+
       hugoVersion = nixpkgs.lib.fileContents ./.hugo-version;
     in
     {
@@ -35,6 +95,11 @@
           PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
 
           shellHook = ''
+            # static/fonts is generated and gitignored; see the css-pipeline
+            # change. Without this, `hugo server` falls back to the system face.
+            mkdir -p static/fonts
+            cp -f ${siteFonts pkgs}/*.woff2 static/fonts/ 2>/dev/null || true
+            chmod u+w static/fonts/*.woff2 2>/dev/null || true
             if [ "$(hugo version | sed -n 's/.*v\([0-9.]*\).*/\1/p')" != "${hugoVersion}" ]; then
               echo "warning: dev shell Hugo is not ${hugoVersion}, the version pinned in .hugo-version" >&2
             fi
@@ -45,6 +110,8 @@
       packages = forAllSystems (pkgs: {
         default = self.packages.${pkgs.stdenv.hostPlatform.system}.site;
 
+        fonts = siteFonts pkgs;
+
         site = pkgs.stdenv.mkDerivation {
           pname = "nivis-tf-site";
           version = "0.1.0";
@@ -52,6 +119,11 @@
           nativeBuildInputs = [ pkgs.hugo ];
           buildPhase = ''
             runHook preBuild
+            # Fonts are built from nixpkgs rather than committed, so they are
+            # staged into static/ just before the build. See the css-pipeline
+            # change's design note.
+            mkdir -p static/fonts
+            cp ${siteFonts pkgs}/*.woff2 static/fonts/
             hugo --minify --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache"
             runHook postBuild
           '';
@@ -66,6 +138,15 @@
       checks = forAllSystems (
         pkgs:
         let
+          # Fonts are built from nixpkgs rather than committed, so anything that
+          # builds the site has to stage them first. One place, so a new check
+          # cannot forget and silently test a fontless page.
+          stageSrc = ''
+            cp -r ${self} src && chmod -R u+w src
+            mkdir -p src/static/fonts
+            cp ${siteFonts pkgs}/*.woff2 src/static/fonts/
+          '';
+
           # A check is a script under tests/checks/ run against the source tree.
           # Keeping them as scripts rather than inline Nix means a contributor
           # can run one directly, and the failure message is the script's own.
@@ -97,6 +178,21 @@
 
           snippets = script "snippets" [ pkgs.python3 ];
 
+          assets =
+            pkgs.runCommand "check-assets"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pkgs.python3
+                  pkgs.gnugrep
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/assets.sh src
+                touch "$out"
+              '';
+
           mark =
             pkgs.runCommand "check-mark"
               {
@@ -107,7 +203,7 @@
                 ];
               }
               ''
-                cp -r ${self} src && chmod -R u+w src
+                ${stageSrc}
                 bash src/tests/checks/mark.sh src
                 touch "$out"
               '';
@@ -137,7 +233,7 @@
                 ];
               }
               ''
-                cp -r ${self} src && chmod -R u+w src
+                ${stageSrc}
                 bash src/tests/checks/tokens.sh src
                 touch "$out"
               '';
@@ -152,7 +248,7 @@
                 ];
               }
               ''
-                cp -r ${self} src && chmod -R u+w src
+                ${stageSrc}
                 bash src/tests/checks/unit.sh src
                 touch "$out"
               '';
@@ -160,7 +256,8 @@
           build = pkgs.runCommand "check-build" { nativeBuildInputs = [ pkgs.hugo ]; } ''
             # Hugo writes a build lock next to the source, so the read-only
             # store path has to be copied before it can be built.
-            cp -r ${self} src && chmod -R u+w src && cd src
+            ${stageSrc}
+            cd src
             # Hugo exits 0 on a deprecation or a missing-layout warning. The
             # site must build silent, so the warnings are the failure condition.
             hugo --minify --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache" 2>&1 | tee "$TMPDIR/log"

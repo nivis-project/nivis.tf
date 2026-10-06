@@ -19,9 +19,15 @@ fi
 # Hex, functional notations, and the CSS named colors that could plausibly be
 # typed by hand. `transparent` and `currentColor` are not colors in this sense:
 # they carry no value, so they cannot disagree with a token.
-pattern='#[0-9a-fA-F]{3,8}\b|\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\s*\(|\b(red|blue|green|black|white|grey|gray|yellow|orange|purple|pink|brown|cyan|magenta|silver|gold|navy|teal|olive|maroon|lime|aqua|fuchsia)\b'
+#
+# A named colour only counts as a VALUE: after a colon, on the same declaration,
+# and not part of a longer identifier. Without that, `white-space: pre` reads as
+# the colour white, and a rule that rejects legitimate CSS is a rule somebody
+# turns off. That false positive was real, not hypothetical.
+named='red|blue|green|black|white|grey|gray|yellow|orange|purple|pink|brown|cyan|magenta|silver|gold|navy|teal|olive|maroon|lime|aqua|fuchsia'
+pattern="#[0-9a-fA-F]{3,8}\\b|\\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\\s*\\(|:[^;{}]*(?<![-\\w])($named)(?![-\\w])"
 
-hits="$(grep -rnE "$pattern" assets/css --include='*.css' --exclude='tokens.css' || true)"
+hits="$(grep -rnP "$pattern" assets/css --include='*.css' --exclude='tokens.css' || true)"
 
 if [ -n "$hits" ]; then
   echo "css-colors: a color value appears outside assets/css/tokens.css" >&2
@@ -37,7 +43,7 @@ count="$(find assets/css -name '*.css' -not -name 'tokens.css' | wc -l)"
 # tested, so prove it fires before reporting the real tree clean.
 fixture="tests/fixtures/stray-color"
 if [ -d "$fixture" ]; then
-  caught="$(grep -rnE "$pattern" "$fixture/assets/css" --include='*.css' --exclude='tokens.css' || true)"
+  caught="$(grep -rnP "$pattern" "$fixture/assets/css" --include='*.css' --exclude='tokens.css' || true)"
   if [ -z "$caught" ]; then
     echo "css-colors: the negative fixture was not caught; the scan has a hole" >&2
     echo "  $fixture/assets/css/bad.css contains colors this check should reject" >&2
@@ -51,7 +57,7 @@ if [ -d "$fixture" ]; then
   fi
   # tokens.css inside the fixture must NOT be flagged: the exemption is part of
   # the rule, and an exemption that does not work is a rule that blocks work.
-  if grep -rnE "$pattern" "$fixture/assets/css/tokens.css" >/dev/null 2>&1; then
+  if grep -rnP "$pattern" "$fixture/assets/css/tokens.css" >/dev/null 2>&1; then
     : # it does contain a color, which is the point; the --exclude must skip it
   fi
   if printf '%s\n' "$caught" | grep -q 'tokens.css'; then

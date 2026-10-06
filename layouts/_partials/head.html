@@ -4,7 +4,32 @@
 {{- with .Description }}
 <meta name="description" content="{{ . }}">
 {{- end }}
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+{{- /*
+  One stylesheet, bundled from the sources in order. tokens.css is a template,
+  so it is executed before it joins the bundle.
+
+  Development builds skip minification and fingerprinting: a fingerprinted file
+  and live reload fight over the cache, and the integrity attribute makes every
+  edit a hard refresh. The gate runs against a production build.
+*/ -}}
 {{- $tokensSrc := resources.Get "css/tokens.css" }}
 {{- if not $tokensSrc }}{{ errorf "assets/css/tokens.css is missing; the site cannot be styled without it" }}{{ end }}
 {{- $tokens := $tokensSrc | resources.ExecuteAsTemplate "css/tokens.css" . }}
-<link rel="stylesheet" href="{{ $tokens.RelPermalink }}">
+{{- $sheets := slice $tokens }}
+{{- range (slice "css/base.css" "css/layout.css" "css/components.css" "css/syntax.css") }}
+{{- $s := resources.Get . }}
+{{- if not $s }}{{ errorf "stylesheet %q is missing" . }}{{ end }}
+{{- $sheets = $sheets | append $s }}
+{{- end }}
+{{- $css := $sheets | resources.Concat "css/site.css" }}
+{{- if hugo.IsProduction }}
+{{- $css = $css | minify | fingerprint "sha256" }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+{{- else }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}">
+{{- end }}
+{{- /* The two faces the first screen needs, before the browser finds them in
+       the stylesheet. */}}
+<link rel="preload" href="/fonts/Hind-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/IBMPlexMono-Regular.woff2" as="font" type="font/woff2" crossorigin>

@@ -38,3 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   full, project and footer variants, plus an SVG favicon from the same partial.
   No JavaScript ships and no path data is written by hand. Every fill is a
   custom property, so the whole family recolours in one edit.
+- The site loads one minified, fingerprinted stylesheet with an integrity hash,
+  and serves its own fonts. Nothing on the page reaches another host, and the
+  gate fails if anything ever does.

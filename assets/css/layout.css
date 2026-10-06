@@ -1,0 +1,29 @@
+.container {
+  max-width: var(--width-content);
+  margin: 0 auto;
+  padding-left: var(--pad-side);
+  padding-right: var(--pad-side);
+}
+
+.section {
+  padding-top: var(--pad-section);
+  padding-bottom: var(--pad-section);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The one grid primitive the briefing uses everywhere: columns collapse to one
+   below their floor with no media query. --col-min is set per use. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--col-min), 100%), 1fr));
+}
+
+.surface {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}

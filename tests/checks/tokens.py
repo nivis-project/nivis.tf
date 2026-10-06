@@ -37,14 +37,25 @@ BRIEFING = {
     "tok-literal": ("oklch(0.85 0.12 78)", None),
 }
 
-DECL = re.compile(r"--([a-z0-9-]+)\s*:\s*([^;]+);")
+# The last declaration in a minified block has no trailing semicolon, so the
+# terminator is a semicolon OR the closing brace. Requiring the semicolon
+# silently dropped the last token of every rule set.
+DECL = re.compile(r"--([a-z0-9-]+)\s*:\s*([^;}]+)\s*[;}]")
 
 
 def block_after(css, marker):
-    """The declarations of the first rule whose selector contains `marker`."""
-    i = css.find(marker)
-    if i < 0:
+    """The declarations of the first rule whose selector matches `marker`.
+
+    `marker` is a regex, because the stylesheet this parses is the shipped
+    bundle, which is minified: `:root {` becomes `:root{` and
+    `prefers-color-scheme: dark` becomes `prefers-color-scheme:dark`. Parsing
+    the minified bundle rather than a readable intermediate is deliberate, it
+    is what reaches the reader.
+    """
+    m = re.search(marker, css)
+    if not m:
         return None
+    i = m.start()
     start = css.index("{", i)
     depth, j = 0, start
     while j < len(css):
@@ -63,9 +74,9 @@ def main():
     css = path.read_text()
     errors = []
 
-    light = block_after(css, ":root {")
-    explicit = block_after(css, ':root[data-theme="dark"]')
-    system = block_after(css, "prefers-color-scheme: dark")
+    light = block_after(css, r":root\s*\{")
+    explicit = block_after(css, r':root\[data-theme=["\']?dark["\']?\]')
+    system = block_after(css, r"prefers-color-scheme\s*:\s*dark")
 
     for name, got in (("light", light), ("explicit dark", explicit), ("system dark", system)):
         if got is None:

@@ -96,6 +96,13 @@ settle them, and none of them block building the site.
    They live in `data/marks.yaml`.
 5. **Whether the site grows beyond one page.** The structure allows docs or a
    blog; this build does not add them.
+6. **Fonts are built from nixpkgs, not committed.** The briefing says to
+   self-host them in `static/fonts/`, which reads as committing the woff2
+   files. Hind comes from `google-fonts` and IBM Plex Mono from `ibm-plex`,
+   both as TrueType, and the build converts them with `woff2_compress`. That
+   keeps binaries out of the repository and licences tracked by nixpkgs, but it
+   means `hugo server` run outside `nix develop` falls back to the system face.
+   Say so if you would rather commit the files.
 
 ## License
 

@@ -25,6 +25,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `snippets`                   | snippets and their references agree both ways; no markup or style values in content | present |
 | `snippets-unformatted`       | the formatter never rewrites approved copy        | present |
 | `mark`                       | every generated mark matches an independent evaluation of the curve | present |
+| `assets`                     | one fingerprinted stylesheet, the right font set, nothing external | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -53,6 +54,40 @@ run against a deliberate violation before being trusted.
 | `snippets`                   | five probes: a dangling reference, an orphan file, an HTML tag, a color value, an unresolvable mark |
 | `snippets-unformatted`       | running the formatter without its exclusion, which really did rewrite a snippet |
 | `mark`                       | six probes: flipped rotation, off-by-one sample count, changed radius, colour literal, data changed after render, undeclared mark |
+| `assets`                     | five probes: a CDN stylesheet, a CDN script, a protocol-relative URL, a `url()` in CSS, a dead preload |
+
+### Check the artifact that ships, not a convenient stand-in
+
+Three separate bugs in this project were found by pointing a check at the real
+output instead of something easier to parse.
+
+`tokens` originally read a standalone `tokens.css`. Once the stylesheets were
+bundled, that file no longer existed, and pointing the check at the shipped
+minified bundle immediately exposed a second bug in the checker itself:
+minification drops the final semicolon before `}`, and the declaration regex
+required one, so it was silently missing the **last** token of every rule set.
+`--mark-core` dark was invisible to it.
+
+The same reasoning runs through the suite:
+
+- `tokens` parses the minified production bundle, not a readable intermediate.
+- `mark` compares rendered, rounded path strings, not floats, because the
+  rounding is part of the output.
+- `snippets-unformatted` runs the formatter and compares bytes, instead of
+  checking the formatter's source for an exclusion flag it might ignore.
+- `assets` builds with the production environment, because fingerprinting and
+  minification only happen there.
+
+### A rule that rejects correct work gets turned off
+
+`css-colors` flagged `white-space: pre` as the colour "white". That is a false
+positive on ordinary CSS, and a check that blocks legitimate work is a check
+somebody disables.
+
+Named colours now only count as **values**: after a colon, on the same
+declaration, not part of a longer identifier. Re-probed in both directions, five
+real colour notations still caught, and `white-space`, `.greenish-name`,
+`var(--ink)` and `transparent` all correctly clean.
 
 ### Why the mark check reimplements the formula
 
