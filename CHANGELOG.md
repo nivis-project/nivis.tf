@@ -68,6 +68,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The fonts are subset to what the site can actually render, cutting a first
   visit from 467 KB to 189 KB. A weight no rule applied is no longer served.
 
+- The architectural rule is now fully enforced: the gate fails if a template
+  gains a word a reader would see, or if any inline style reaches the HTML.
+
 ### Fixed
 
 - Code samples rendered on the page background instead of their own dark one,

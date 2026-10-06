@@ -233,6 +233,21 @@
 
           snippets = script "snippets" [ pythonEnv ];
 
+          # The project's one hard architectural rule, enforced.
+          separation =
+            pkgs.runCommand "check-separation"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/separation.sh src
+                touch "$out"
+              '';
+
           font-coverage =
             pkgs.runCommand "check-font-coverage"
               {

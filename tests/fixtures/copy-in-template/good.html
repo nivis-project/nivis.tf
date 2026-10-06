@@ -1,0 +1,6 @@
+{{/* The same markup done correctly: every reader-visible string comes from
+     outside the template. This must NOT be flagged. */}}
+<button aria-label="{{ i18n "theme_switch" }}">{{ .Label }}</button>
+<a href="{{ .URL }}">{{ .Label }}</a>
+<img src="{{ .Src }}" alt="{{ .Alt }}">
+<section class="hero container grid" data-x="y"><span></span></section>

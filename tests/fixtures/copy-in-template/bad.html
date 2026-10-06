@@ -1,0 +1,7 @@
+{{/* A negative fixture. Every line below violates the rule: a label and an
+     accessible name written into a template instead of coming from data or
+     i18n. tests/checks/separation.py asserts these ARE caught before it
+     reports the real layouts clean. */}}
+<button aria-label="Switch between light and dark">{{ .Thing }}</button>
+<a href="{{ .URL }}">Read the full guide</a>
+<img src="{{ .Src }}" alt="A diagram of the round trip">

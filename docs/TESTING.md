@@ -36,7 +36,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `e2e`                        | a real browser: layout, keyboard, theme, motion, axe-core | present |
 | `metadata`                   | sharing metadata agrees with the page and is absolute | present |
 | `font-coverage`              | every rendered character exists in the served fonts | present |
-| `invariants`                 | the content / style / template separation rules   | planned |
+| `separation`                 | no copy in templates, no inline style in the output | present |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
 | `e2e`                        | Playwright against the built `public/`            | planned |
@@ -74,6 +74,7 @@ run against a deliberate violation before being trusted.
 | `e2e`                        | found three real defects on its first run, see below |
 | `metadata`                   | seven probes: a missing tag, a relative image, a drifted title, an empty tag, a placeholder, a missing image, an unresolved custom property |
 | `font-coverage`              | caught two real uncovered characters on its first run |
+| `separation`                 | four probes: a hard-coded label, a hard-coded accessible name, an inline style, a blinded fixture |
 
 ### What the browser found that nothing else could
 
@@ -486,18 +487,39 @@ passes silently forever.
 6. Every snippet referenced from `data/` exists in `snippets/`, and every file
    in `snippets/` is referenced.
 
-### The copy-scan allowlist
+### The copy scan, and why it reads only two places
 
-Check 1 cannot be a blanket ban on word characters: templates legitimately
-contain HTML tag names, attribute names, Go template identifiers and class
-names. The scan therefore works on text nodes and on the values of
-human-readable attributes (`alt`, `title`, `aria-label`, `placeholder`), and
-allows only what this list names. Keep the list short; every entry is a hole in
-the rule.
+`separation` enforces the half of the rule that matters most to an editor: no
+template contains a word a reader sees or hears.
+
+It cannot be a blanket ban on word characters. Templates legitimately contain
+element names, attribute names, class names and template logic, and a scan that
+treats all of it as copy rejects `<section class="hero">` and gets switched off
+within a week. So it reads exactly the two places text reaches a reader:
+
+- **text nodes**, after template actions, comments, and script and style blocks
+  are removed,
+- **the values of reader-perceived attributes**: `alt`, `title`, `aria-label`,
+  `aria-description`, `placeholder`.
+
+**Order matters, and getting it wrong produced two false positives on the first
+run.** Template actions must be stripped *before* attributes are matched,
+because a Go action can contain quotes: `aria-label="{{ i18n "theme_switch" }}"`
+stops an attribute regex at the inner quote and reports `{{ i18n` as hard-coded
+copy. And script blocks are code, not language: the theme switch's pre-paint
+snippet was read as a sentence.
+
+The style scan runs on the **generated HTML**, not on templates, because a
+template can compose a style attribute from variables without containing one.
 
 | Allowed | Why |
 |---------|-----|
-| (empty) | Nothing is allowed yet. Add a row with a reason, or move the string to `data/` or `i18n/en.yaml`. |
+| (empty) | Nothing is allowed. Add a row with a reason, or move the string to `data/` or `i18n/en.yaml`. |
+
+Both scans assert their negative fixtures are caught before reporting the real
+tree clean, and `tests/fixtures/copy-in-template/good.html` is the same markup
+written correctly, which must **not** be flagged. A rule with no counter-example
+becomes an obstacle.
 
 ## Playwright
 

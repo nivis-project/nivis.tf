@@ -1,11 +1,11 @@
 ---
 # nivistf-7mto
 title: Test harness and the nix flake check gate
-status: todo
+status: in-progress
 type: epic
 priority: critical
 created_at: 2026-10-06T13:02:11Z
-updated_at: 2026-10-06T13:02:40Z
+updated_at: 2026-10-06T15:06:53Z
 parent: nivistf-cpt6
 blocked_by:
     - nivistf-gwla
