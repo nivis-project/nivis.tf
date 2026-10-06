@@ -1,11 +1,11 @@
 ---
 # nivistf-c6h5
 title: Accessibility and responsive conformance
-status: todo
+status: in-progress
 type: epic
 priority: high
 created_at: 2026-10-06T13:02:12Z
-updated_at: 2026-10-06T13:02:41Z
+updated_at: 2026-10-06T14:32:27Z
 parent: nivistf-wrli
 blocked_by:
     - nivistf-arln

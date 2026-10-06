@@ -30,6 +30,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `sections`                   | the page agrees with the data, section by section  | present |
 | `acceptance`                 | the briefing's add-a-project criterion, replayed literally | present |
 | `syntax`                     | highlighting resolves to tokens, prompt not copyable, no wrapping | present |
+| `theming`                    | the theme mechanism: pre-paint ordering, one script, guarded storage | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -63,6 +64,37 @@ run against a deliberate violation before being trusted.
 | `sections`                   | seventeen probes, including a div pretending to be a table, a moved highlight, a stray `overflow-x`, a hard-coded subject column, a nested link, an unlabelled section |
 | `acceptance`                 | three probes: a template rendering only the first six items, a hard-coded destination, a non-generated mark |
 | `syntax`                     | six probes: a reclassified token, an inline style, an unmapped class, a selectable prompt, an unselectable block, a wrapping rule |
+| `theming`                    | seven probes, including moving the pre-paint snippet below the stylesheet and removing the storage guard |
+
+### Say which half is deferred, on every run
+
+`theming` proves the theme switch's **mechanism**: the pre-paint snippet is in
+the head above the stylesheet, the control is a real button named from the
+translation table, it ships hidden so it exists only when it works, storage
+access is guarded, the toggle consults the system preference, and the page ships
+exactly two scripts.
+
+It cannot prove the **behaviour**: that no flash occurs, that a choice survives
+a real reload, that the button is genuinely invisible with JavaScript off. Those
+need a browser.
+
+So it prints the deferral every time it passes:
+
+    theming: note, no-flash and persistence across a real reload are browser
+    behaviours, deferred to the e2e epic
+
+A green tick that implies coverage it does not have is worse than an amber one
+that says what it covers.
+
+Three failure modes it does catch, each a real bug rather than a style point:
+
+- **The toggle reading the stored value instead of the computed one.** A reader
+  with nothing stored on a dark system would press once and get dark again.
+- **A visible button with no script.** Present and inert is worse than absent: a
+  reader cannot tell it from a broken page.
+- **An unguarded `localStorage` read.** It throws in a private window rather
+  than returning nothing, which would stop the pre-paint snippet and leave the
+  wrong palette on screen.
 
 ### A gap reported out loud beats a test that quietly asserts less
 

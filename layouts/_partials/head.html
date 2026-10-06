@@ -6,6 +6,16 @@
 {{- end }}
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 {{- /*
+  A recorded theme choice must reach the document root BEFORE the first paint,
+  which rules out an external file: the browser would paint before fetching it.
+  So this goes inline, in the head, above the stylesheet link.
+
+  The read is guarded because localStorage throws in a private window rather
+  than returning nothing, and an unguarded throw here would stop the script and
+  leave the page showing the wrong palette.
+*/ -}}
+<script>try{var t=localStorage.getItem("nivis-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+{{- /*
   One stylesheet, bundled from the sources in order. tokens.css is a template,
   so it is executed before it joins the bundle.
 
@@ -33,3 +43,7 @@
        the stylesheet. */}}
 <link rel="preload" href="/fonts/Hind-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/IBMPlexMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+{{- $theme := resources.Get "js/theme.js" }}
+{{- if not $theme }}{{ errorf "assets/js/theme.js is missing" }}{{ end }}
+{{- if hugo.IsProduction }}{{ $theme = $theme | minify | fingerprint "sha256" }}{{ end }}
+<script src="{{ $theme.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $theme.Data.Integrity }}"{{ end }} defer></script>

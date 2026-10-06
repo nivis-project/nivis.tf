@@ -182,6 +182,20 @@
 
           snippets = script "snippets" [ pythonEnv ];
 
+          theming =
+            pkgs.runCommand "check-theming"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/theming.sh src
+                touch "$out"
+              '';
+
           syntax =
             pkgs.runCommand "check-syntax"
               {

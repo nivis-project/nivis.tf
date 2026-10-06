@@ -56,3 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Code samples are syntax highlighted through CSS classes mapped onto the
   design tokens. Shell prompts are visible but left out of a copied selection,
   so dragging across a sample and pasting gives a runnable command.
+- The theme follows your system by default, and the header button overrides it
+  and remembers the choice. The chosen palette is applied before the page
+  paints, so there is no flash. Without JavaScript the system preference still
+  decides and the button is not shown.
