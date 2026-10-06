@@ -1,11 +1,11 @@
 ---
 # nivistf-w84z
 title: Design tokens as the single source of style values
-status: todo
+status: in-progress
 type: epic
 priority: high
 created_at: 2026-10-06T13:02:11Z
-updated_at: 2026-10-06T13:02:40Z
+updated_at: 2026-10-06T13:46:45Z
 parent: nivistf-a5q8
 blocked_by:
     - nivistf-gwla
