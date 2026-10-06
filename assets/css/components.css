@@ -6,8 +6,8 @@
 }
 
 .button-primary {
-  background: var(--warm);
-  color: var(--on-warm);
+  background: var(--cta);
+  color: var(--on-cta);
   padding: 13px 26px;
 }
 
@@ -213,8 +213,8 @@ figure.code figcaption {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--warm);
-  color: var(--on-warm);
+  background: var(--cta);
+  color: var(--on-cta);
   display: flex;
   align-items: center;
   justify-content: center;

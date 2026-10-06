@@ -329,8 +329,6 @@
 
           contrast = script "contrast" [ pythonEnv ];
 
-          warm-is-a-fill = script "warm-is-a-fill" [ pkgs.gnugrep ];
-
           # The browser suite. Browsers come from nixpkgs through
           # PLAYWRIGHT_BROWSERS_PATH and are never downloaded at test time.
           e2e =
@@ -344,16 +342,6 @@
                 PLAYWRIGHT_BROWSERS_PATH = pkgs.playwright-driver.browsers;
                 PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
                 AXE_PATH = axeCore pkgs;
-                # The e2e suite identifies a palette by comparing the resolved
-                # --ground against these, rather than guessing from a serialised
-                # colour string. Taken from data/tokens.yaml so there is still
-                # one source.
-                TOKENS_JSON = builtins.toJSON {
-                  ground = {
-                    light = "oklch(0.975 0.008 275)";
-                    dark = "oklch(0.17 0.03 275)";
-                  };
-                };
               }
               ''
                 ${stageSrc}
@@ -365,6 +353,12 @@
                   || { cat "$TMPDIR/build.log" >&2; exit 1; }
                 export SITE_DIR="$TMPDIR/public"
                 export HOME="$TMPDIR"
+                # The suite identifies a palette by comparing the resolved
+                # --ground against the token values. They are READ from
+                # data/tokens.yaml rather than restated in this file: they were
+                # restated once, and drifted the moment the palette changed.
+                TOKENS_JSON="$(python3 "$PWD/tests/checks/ground-tokens.py")"
+                export TOKENS_JSON
                 playwright test --config tests/e2e/playwright.config.js
                 touch "$out"
               '';

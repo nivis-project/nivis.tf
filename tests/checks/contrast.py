@@ -26,7 +26,7 @@ PAIRINGS = [
     ("accent", "ground", 4.5, "links on the page"),
     ("accent", "surface", 4.5, "links on an alternating section"),
     ("ink", "accent-soft", 4.5, "text in the highlighted table column"),
-    ("on-warm", "warm", 4.5, "text on a primary button"),
+    ("on-cta", "cta", 4.5, "text on a primary button"),
     ("code-ink", "code-bg", 4.5, "code"),
     ("code-dim", "code-bg", 4.5, "comments and prompts in code"),
     ("code-ink", "band-code", 4.5, "code on the band"),
@@ -104,31 +104,36 @@ def main():
                     f"below the required {minimum}:1"
                 )
 
-    # The warm accent is a fill, never a text colour on the page or a surface.
-    #
-    # An earlier version of this check asserted that warm FAILS contrast in both
-    # palettes, and that was wrong: in dark it is around 10:1. The briefing's
-    # "insufficient contrast" is about the light palette, where it is under 2:1.
-    # The rule still holds in both, because warm is a fill, but contrast is not
-    # what enforces it. The CSS does, in tests/checks/warm-is-a-fill.sh.
-    #
-    # Reported rather than asserted, so the number that motivates the rule stays
-    # visible instead of becoming folklore.
-    light = {}
+
+    # Every colour belongs to one analogous family. The brand brief gives the
+    # anchors as teal, sky and deep blue; in oklch those are hues 186.6, 244.8
+    # and 269.8. A token outside that range is a colour from some other family,
+    # which is the thing the brief is specifically trying to prevent.
+    FAMILY = (180.0, 276.0)
     for name, entry in by_name.items():
-        light[name] = parse(entry["light"], name)
-    warm_note = ", ".join(
-        f"warm on {bg} is {contrast(light['warm'], light[bg]):.2f}:1"
-        for bg in ("ground", "surface")
-    )
+        for theme in ("light", "dark"):
+            if theme == "dark" and "dark" not in entry:
+                continue
+            value = entry.get("dark") if theme == "dark" else entry["light"]
+            m = OKLCH.match(value.strip())
+            if not m:
+                continue
+            hue, chroma = float(m.group(3)), float(m.group(2))
+            # A near-neutral has no meaningful hue, so it cannot be out of family.
+            if chroma < 0.01:
+                continue
+            if not (FAMILY[0] <= hue <= FAMILY[1]):
+                errors.append(
+                    f"{theme}: --{name} has hue {hue}, outside the brand family "
+                    f"{FAMILY[0]} to {FAMILY[1]}"
+                )
 
     if errors:
         for e in errors:
             print(f"contrast: FAIL {e}", file=sys.stderr)
         return 1
 
-    print(f"contrast: ok, {checked} pairings across both palettes meet their minimums")
-    print(f"contrast: note, in the light palette {warm_note}, which is why warm is a fill and never a text colour")
+    print(f"contrast: ok, {checked} pairings meet their minimums and every token is in the brand family")
     return 0
 
 
