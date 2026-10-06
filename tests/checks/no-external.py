@@ -13,7 +13,17 @@ import re
 import sys
 
 SRC = re.compile(r"""\bsrc\s*=\s*["']([^"']+)["']""", re.I)
-LINK = re.compile(r"""<link\b[^>]*?\bhref\s*=\s*["']([^"']+)["'][^>]*>""", re.I)
+LINK_TAG = re.compile(r"<link\b[^>]*>", re.I)
+
+# Only these rel values make the browser FETCH something. canonical, alternate,
+# author and license are metadata: they describe the page, they do not load it.
+# Flagging canonical would make the rule impossible to satisfy for any site with
+# an absolute canonical address, which is every site.
+FETCHING_REL = {
+    "stylesheet", "preload", "prefetch", "preconnect", "dns-prefetch",
+    "icon", "shortcut icon", "apple-touch-icon", "mask-icon", "manifest",
+    "modulepreload", "prerender",
+}
 CSS_URL = re.compile(r"""url\(\s*["']?([^"')]+)["']?\s*\)""", re.I)
 EXTERNAL = re.compile(r"^(?:[a-z][a-z0-9+.-]*:)?//", re.I)
 
@@ -42,7 +52,13 @@ def main():
         text = page.read_text()
         rel = page.relative_to(public)
         errors += offenders(SRC.findall(text), f"{rel} (src)")
-        errors += offenders(LINK.findall(text), f"{rel} (link href)")
+        for tag in LINK_TAG.findall(text):
+            rel_m = re.search(r"""\brel\s*=\s*["']([^"']+)["']""", tag, re.I)
+            href_m = re.search(r"""\bhref\s*=\s*["']([^"']+)["']""", tag, re.I)
+            if not rel_m or not href_m:
+                continue
+            if rel_m.group(1).strip().lower() in FETCHING_REL:
+                errors += offenders([href_m.group(1)], f"{rel} (link rel={rel_m.group(1)})")
 
     css_files = sorted(public.rglob("*.css"))
     for sheet in css_files:

@@ -34,6 +34,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `contrast`                   | every pairing meets its minimum, computed from the tokens | present |
 | `warm-is-a-fill`             | `--warm` is never used as a text colour          | present |
 | `e2e`                        | a real browser: layout, keyboard, theme, motion, axe-core | present |
+| `metadata`                   | sharing metadata agrees with the page and is absolute | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -70,6 +71,7 @@ run against a deliberate violation before being trusted.
 | `theming`                    | seven probes, including moving the pre-paint snippet below the stylesheet and removing the storage guard |
 | `contrast`                   | three probes: a lowered light value, a lowered dark-only value, warm used as text |
 | `e2e`                        | found three real defects on its first run, see below |
+| `metadata`                   | seven probes: a missing tag, a relative image, a drifted title, an empty tag, a placeholder, a missing image, an unresolved custom property |
 
 ### What the browser found that nothing else could
 
@@ -301,6 +303,35 @@ The same reasoning runs through the suite:
   minification only happen there.
 
 ### A rule that rejects correct work gets turned off
+
+This has now happened twice, and both times the fix was the same shape: make the
+rule match what it *means* rather than what is easy to grep for, then re-probe
+the narrowed version in **both** directions, because narrowing is how you create
+a blind spot.
+
+**`css-colors` flagged `white-space: pre`** as the colour "white". Named colours
+now count only as values: after a colon, not part of a longer identifier.
+
+**`no-external` flagged `rel="canonical"`.** It treated every `<link href>` as a
+resource load, but a canonical link is metadata: it describes the page, it does
+not fetch anything. As written the rule was impossible to satisfy for any site
+with an absolute canonical address, which is every site. It now distinguishes by
+`rel`: `stylesheet`, `preload`, `icon`, `preconnect` and friends fetch;
+`canonical`, `alternate`, `author`, `license` do not. Re-probed with five real
+external fetches (still caught) and two metadata links (correctly ignored).
+
+### Metadata drift is the failure worth guarding
+
+`metadata` asserts the sharing tags **agree with the page**, not merely that
+they are non-empty. The failure it exists for is duplication drift: a title in
+the page, a different one in `og:title`, a third in `twitter:title`, diverging
+until a shared link contradicts the thing it links to.
+
+It also catches a relative `og:image`, which looks perfectly correct in the
+markup and fails only once somebody actually shares the link, because sharing
+systems resolve those with no document base.
+
+
 
 `css-colors` flagged `white-space: pre` as the colour "white". That is a false
 positive on ordinary CSS, and a check that blocks legitimate work is a check

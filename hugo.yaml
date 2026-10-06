@@ -12,7 +12,13 @@ outputs:
   home:
     - HTML
     - FAVICON
+    - SOCIAL
 outputFormats:
+  SOCIAL:
+    mediaType: image/svg+xml
+    baseName: social
+    isPlainText: true
+    notAlternative: true
   FAVICON:
     mediaType: image/svg+xml
     baseName: favicon

@@ -194,6 +194,20 @@
 
           snippets = script "snippets" [ pythonEnv ];
 
+          metadata =
+            pkgs.runCommand "check-metadata"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/metadata.sh src
+                touch "$out"
+              '';
+
           contrast = script "contrast" [ pythonEnv ];
 
           warm-is-a-fill = script "warm-is-a-fill" [ pkgs.gnugrep ];

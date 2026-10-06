@@ -1,11 +1,11 @@
 ---
 # nivistf-bwlv
 title: Performance budget and self-hosted fonts
-status: todo
+status: in-progress
 type: epic
 priority: normal
 created_at: 2026-10-06T13:02:12Z
-updated_at: 2026-10-06T13:02:41Z
+updated_at: 2026-10-06T14:51:09Z
 parent: nivistf-wrli
 blocked_by:
     - nivistf-gxj4

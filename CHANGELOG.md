@@ -61,6 +61,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   paints, so there is no flash. Without JavaScript the system preference still
   decides and the button is not shown.
 
+- The page declares a canonical address and carries Open Graph and card
+  metadata, with a preview image generated from the mark, so a shared link
+  shows what the page is.
+
 ### Fixed
 
 - Code samples rendered on the page background instead of their own dark one,
