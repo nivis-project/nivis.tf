@@ -75,6 +75,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   format, and external links are checked for scheme and host. Resolving them is
   a separate `nix run .#check-links-live` before a release.
 
+- The briefing's acceptance checklist runs as part of the gate. Every item
+  names the check that proves it, and an item whose check disappears fails, so
+  the checklist cannot quietly describe a gate that no longer matches it.
+
 ### Fixed
 
 - Code samples rendered on the page background instead of their own dark one,
@@ -85,3 +89,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The generated favicon and social image were invalid as standalone SVG files:
   they lacked the XML namespace and carried an accessible name in a form a
   document root does not allow.
+- The byte-for-byte snippet guarantee covered one example snippet rather than
+  all seven, and the deployment configuration was never checked at all.

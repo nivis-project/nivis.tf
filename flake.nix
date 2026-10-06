@@ -233,6 +233,23 @@
 
           snippets = script "snippets" [ pythonEnv ];
 
+          # The briefing's acceptance checklist, executable. Also fails if a
+          # checklist item names a check that no longer exists, so the list
+          # cannot drift away from the gate.
+          release =
+            pkgs.runCommand "check-release"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/release.sh src
+                touch "$out"
+              '';
+
           html =
             pkgs.runCommand "check-html"
               {

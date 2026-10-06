@@ -39,6 +39,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `separation`                 | no copy in templates, no inline style in the output | present |
 | `html`                       | every generated HTML and SVG document validates    | present |
 | `links`                      | links are absolute, https, and on expected hosts   | present |
+| `release`                    | the acceptance checklist, executable               | present |
 
 Every check in this table exists. `a11y` is not a separate check: axe-core runs
 inside `e2e`, in both palettes, because it needs the same browser.
@@ -284,6 +285,33 @@ instead of a stub, it failed for a reason that had nothing to do with dispatch.
 The fixture now ships its own section stubs, mounted ahead of the real layouts.
 The alternative, adding `data-section` attributes to production markup so tests
 can see the structure, would have put test scaffolding into what ships.
+
+### The acceptance checklist runs
+
+Section 11 of the briefing is a twelve-item checklist. `release` turns it into
+something that executes, and building it found two items nothing had actually
+verified:
+
+- **"All seven snippets match byte for byte"** was proven for *one fixture
+  sample*. A much weaker claim wearing the same words. Now every one of the
+  seven real snippets is compared against its file.
+- **`amplify.yml` had no check at all.** Nothing confirmed it published the
+  right directory or read the pinned Hugo version.
+
+The third part matters most over time: **the checklist cannot drift from the
+gate**. Each item names the check that proves it, and an item claiming automated
+verification whose check does not exist fails. Deleting `separation` from the
+flake makes `release` report that checklist item as unproven, instead of the
+list quietly describing a gate that no longer matches it.
+
+One item is `manual` and reported as outstanding on every pass rather than
+counted as done: whether the README actually explains things clearly. A person
+has to judge that.
+
+A probe caught a weakness in this check itself. It matched `.hugo-version`
+anywhere in `amplify.yml`, including **in a comment**, so a config that merely
+mentioned the file while hardcoding a version would have passed. It now requires
+a command that reads it.
 
 ### The dominant failure mode: correct pieces, wrong composition
 
