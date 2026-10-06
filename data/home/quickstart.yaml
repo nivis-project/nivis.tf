@@ -1,0 +1,16 @@
+id: start
+title: "Quick start"
+lead: "All you need is Nix with flakes enabled. The first two steps touch no cloud account."
+steps:
+  - title: "Run it without cloning"
+    snippet: { file: hero-run.console, lang: console }
+  - title: "Take the guided tour"
+    text: "`nivistutor` scaffolds a sandboxed tutorial project, so you can watch a plan and an apply before any credentials are involved."
+    snippet: { file: quickstart-tour.console, lang: console }
+  - title: "Write a flake"
+    text: "One provider, one resource. This is a complete `flake.nix`."
+    snippet: { file: flake.nix, lang: nix }
+  - title: "Plan, apply, inspect, destroy"
+    text: "From here on you are creating real resources in your own AWS account."
+    snippet: { file: quickstart-apply.console, lang: console }
+    link: { label: "Read the full getting-started guide", doc: GETTING-STARTED.md }

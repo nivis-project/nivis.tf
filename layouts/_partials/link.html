@@ -1,0 +1,18 @@
+{{- /*
+  The only reader of site.docs_base.
+
+  A link entry is either a document reference or an absolute address. Both forms
+  appear in four sections; resolving them per-section would hard-code the docs
+  base four times, and moving the documentation would be a four-file edit with
+  one of them forgotten.
+*/ -}}
+{{- $site := hugo.Data.site -}}
+{{- with .doc -}}
+{{- printf "%s/%s" $site.docs_base . -}}
+{{- else -}}
+{{- with .href -}}
+{{- . -}}
+{{- else -}}
+{{- errorf "link entry %v has neither a doc nor an href key" $ -}}
+{{- end -}}
+{{- end -}}

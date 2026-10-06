@@ -1,0 +1,50 @@
+id: compare
+title: "Where Nivis sits"
+lead: >-
+  Terranix generates HCL from Nix and hands it to Terraform. Pulumi compiles
+  providers through a bridge. Nivis keeps resources as Nix values and spawns
+  the providers untouched.
+tools:
+  - { key: nivis,    name: "Nivis", highlight: true }
+  - { key: tf,       name: "OpenTofu / Terraform" }
+  - { key: terranix, name: "Terranix" }
+  - { key: nixops,   name: "NixOps 4" }
+  - { key: pulumi,   name: "Pulumi" }
+rows:
+  - label: "Config language"
+    nivis: { value: "Nix" }
+    tf: { value: "HCL" }
+    terranix: { value: "Nix → HCL" }
+    nixops: { value: "Nix" }
+    pulumi: { value: "TS, Python, Go, …" }
+  - label: "Reuses Terraform / OpenTofu providers"
+    nivis: { value: "Yes, spawned unmodified" }
+    tf: { value: "Yes, native" }
+    terranix: { value: "Yes, via Terraform" }
+    nixops: { value: "In progress", tone: weak }
+    pulumi: { value: "Yes, via bridge" }
+  - label: "Outputs feed back into config"
+    nivis: { value: "Yes, phased re-evaluation" }
+    tf: { value: "Partly: HCL references only", tone: weak }
+    terranix: { value: "No", tone: weak }
+    nixops: { value: "Yes" }
+    pulumi: { value: "Yes, Output<T>" }
+  - label: "Plan before apply"
+    nivis: { value: "Yes" }
+    tf: { value: "Yes" }
+    terranix: { value: "Yes, via Terraform" }
+    nixops: { value: "Partly", tone: weak }
+    pulumi: { value: "Yes" }
+  - label: "OS build and cloud in one expression"
+    nivis: { value: "Yes, NixOS image → AMI" }
+    tf: { value: "No", tone: weak }
+    terranix: { value: "No", tone: weak }
+    nixops: { value: "Yes" }
+    pulumi: { value: "No", tone: weak }
+  - label: "License"
+    nivis: { value: "Apache-2.0" }
+    tf: { value: "MPL-2.0 / BUSL-1.1" }
+    terranix: { value: "MIT" }
+    nixops: { value: "LGPL-2.1" }
+    pulumi: { value: "Apache-2.0 core" }
+link: { label: "Read the full comparison, including CDK and CloudFormation", doc: COMPARISON.md }

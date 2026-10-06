@@ -97,6 +97,35 @@ PY
   fi
 fi
 
+echo "unit: links resolve by kind, and the docs base has one home"
+if build_ok links; then
+  base="https://github.com/nivis-project/nivis/blob/HEAD/docs"
+  doc="$(sed -n 's|.*id="doc">\([^<]*\)<.*|\1|p' "$work/links/index.html")"
+  href="$(sed -n 's|.*id="href">\([^<]*\)<.*|\1|p' "$work/links/index.html")"
+  real="$(sed -n 's|.*id="real">\([^<]*\)<.*|\1|p' "$work/links/index.html")"
+  [ "$doc" = "$base/INSTALL.md" ] || fail "links: a doc entry resolved to '$doc'"
+  [ "$href" = "https://example.com/x" ] || fail "links: an href entry became '$href'"
+  [ "$real" = "$base/INSTALL.md" ] || fail "links: a real data entry resolved to '$real'"
+  note "ok: doc entries resolve against the base, href entries pass through"
+
+  # Changing the base must move every doc link. Build again with a patched
+  # data file, in a copy, so the real tree is untouched.
+  tmp="$work/rebased"
+  cp -r . "$tmp" 2>/dev/null || true
+  sed -i 's|^docs_base:.*|docs_base: https://moved.example/docs|' "$tmp/data/site.yaml"
+  if hugo --source "$tmp/$fixtures/links" --destination "$work/links-rebased" \
+       --cacheDir "$work/cache" > "$work/links-rebased.log" 2>&1; then
+    moved="$(sed -n 's|.*id="real">\([^<]*\)<.*|\1|p' "$work/links-rebased/index.html")"
+    if [ "$moved" = "https://moved.example/docs/INSTALL.md" ]; then
+      note "ok: changing docs_base in one place moves every doc link"
+    else
+      fail "links: after moving docs_base the link is '$moved'"
+    fi
+  else
+    fail "links: the rebased fixture did not build"
+  fi
+fi
+
 echo "unit: an unknown section fails the build, naming the section"
 if build_must_fail unknown-section 'section "this-section-does-not-exist"'; then
   note "ok: the build fails and the message names the section, not a template path"

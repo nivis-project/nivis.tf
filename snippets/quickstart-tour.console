@@ -1,0 +1,2 @@
+$ nix shell github:nivis-project/nivis#nivis github:nivis-project/nivis#tutor
+$ nivistutor

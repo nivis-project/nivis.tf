@@ -29,3 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Every color, font size and spacing value is a design token. The palette is
   generated from one list, so the light and dark rule sets cannot drift apart,
   and the gate fails if a color appears in any other stylesheet.
+- The site's copy and all seven code samples are in `data/` and `snippets/`.
+  A reference to a snippet that does not exist, a snippet nothing references,
+  and a project whose mark has no parameters all fail the gate.
+- Documentation links resolve through a single `docs_base`, so moving the docs
+  is a one-line change.

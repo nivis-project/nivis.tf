@@ -22,6 +22,8 @@ names the thing that broke rather than reporting "the tests failed".
 | `unit`                       | Hugo template assertions over fixture sites       | present |
 | `tokens`                     | the generated token stylesheet matches the briefing and the two dark rule sets agree | present |
 | `css-colors`                 | no color value outside `assets/css/tokens.css`    | present |
+| `snippets`                   | snippets and their references agree both ways; no markup or style values in content | present |
+| `snippets-unformatted`       | the formatter never rewrites approved copy        | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -47,6 +49,26 @@ run against a deliberate violation before being trusted.
 | `unit`                       | three separate probes, see below               |
 | `tokens`                     | four probes: disagreeing dark rule sets, a drifted light value, a redundant override, a missing token |
 | `css-colors`                 | a permanent negative fixture, plus blinding the scan's own pattern |
+| `snippets`                   | five probes: a dangling reference, an orphan file, an HTML tag, a color value, an unresolvable mark |
+| `snippets-unformatted`       | running the formatter without its exclusion, which really did rewrite a snippet |
+
+### Why `snippets-unformatted` exists
+
+`snippets/` holds three `.nix` files. `flake.nix` is a complete flake whose
+exact line breaks are the approved copy a reader sees, and `roundtrip-note.nix`
+is a fragment that is not valid Nix on its own. `nix fmt` reflowed the first and
+errored on the second the first time it ran over them.
+
+Both failures are invisible from a reader's point of view: the page simply shows
+something other than what was approved. So the formatter excludes `snippets/`,
+and this check proves the exclusion works by **running** the formatter and
+comparing bytes. Checking the formatter's source for an exclusion would test the
+wrong thing: it would pass for a formatter that has the flag and ignores it.
+
+A warning for whoever probes this check next. The probe that proves it bites
+runs the formatter without its exclusion, and the first time it was run it was
+pointed at the real tree and corrupted `snippets/flake.nix` for real. Run
+destructive probes on a copy.
 
 ### Checks that test themselves
 

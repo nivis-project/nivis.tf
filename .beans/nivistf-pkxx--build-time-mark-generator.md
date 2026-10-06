@@ -1,11 +1,11 @@
 ---
 # nivistf-pkxx
 title: Build-time mark generator
-status: todo
+status: in-progress
 type: epic
 priority: high
 created_at: 2026-10-06T13:02:12Z
-updated_at: 2026-10-06T13:02:41Z
+updated_at: 2026-10-06T13:58:03Z
 parent: nivistf-zxfw
 blocked_by:
     - nivistf-0ro9

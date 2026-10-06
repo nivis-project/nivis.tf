@@ -1,0 +1,28 @@
+id: projects
+title: "The Nivis projects"
+lead: "Every mark is the same curve, `h(θ) = a + b · cos kθ`, with different parameters."
+items:
+  - name: nivis
+    status: "early but real"
+    mark: nivis
+    text: "The library and executor. Provider resources as Nix values, applied to a fixpoint."
+  - name: registry
+    status: "alpha"
+    mark: registry
+    text: "A browsable catalog of OpenTofu-compatible providers with Nix-native documentation."
+  - name: nivis-tunnel
+    status: "proof of concept"
+    mark: tunnel
+    text: "Deploy NixOS closures to machines with no inbound ports, over a Noise-encrypted relay."
+  - name: nivis-demos
+    status: "examples"
+    mark: demos
+    text: "Small reproducible stacks: state bootstrap, one NixOS workload on two clouds, tunnel deploys."
+  - name: terraform-provider-nivis-tunnel
+    status: "provider"
+    mark: tunnel-provider
+    text: "Terraform provider for the Nivis deployment tunnel."
+  - name: terraform-provider-hcloudimage
+    status: "provider"
+    mark: hcloudimage
+    text: "Upload raw disk images to Hetzner Cloud from Terraform or OpenTofu."

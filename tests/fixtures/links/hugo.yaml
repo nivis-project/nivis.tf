@@ -1,0 +1,19 @@
+baseURL: "https://example.org/"
+title: "fixture"
+disableKinds: [taxonomy, term, RSS, sitemap]
+module:
+  mounts:
+    - source: layouts
+      target: layouts
+    - source: ../../../layouts
+      target: layouts
+    - source: ../../../i18n
+      target: i18n
+    - source: ../../../assets
+      target: assets
+    - source: ../../../data
+      target: data
+    - source: ../../../snippets
+      target: assets/snippets
+    - source: content
+      target: content

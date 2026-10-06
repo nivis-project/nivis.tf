@@ -1,0 +1,14 @@
+name: Nivis
+domain: nivis.tf
+license: Apache-2.0
+github_org: https://github.com/nivis-project
+docs_base: https://github.com/nivis-project/nivis/blob/HEAD/docs
+nav:
+  - { label: Quick start, href: "#start" }
+  - { label: Round trip,  href: "#roundtrip" }
+  - { label: Compare,     href: "#compare" }
+  - { label: Projects,    href: "#projects" }
+nav_cta: { label: GitHub, href: https://github.com/nivis-project }
+footer_links:
+  - { label: GitHub, href: https://github.com/nivis-project }
+  - { label: Issues, href: https://github.com/nivis-project/nivis/issues }

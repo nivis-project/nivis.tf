@@ -1,0 +1,17 @@
+title: "You already know half of it."
+cards:
+  - title: "Coming from Nix"
+    lead: "The missing half is the provider ecosystem."
+    points:
+      - "A **provider** is a plugin binary that speaks to one cloud API. Nivis runs any OpenTofu-compatible provider as-is."
+      - "**plan** previews what would change, **apply** makes it so, and **state** remembers what exists."
+      - "A resource is an attrset built with `mkResource`. Compose it with the functions and modules you already write."
+  - title: "Coming from Terraform"
+    lead: "The missing half is the language."
+    points:
+      - "Same providers, same **plan / apply / destroy**. A `flake.nix` takes the place of your `.tf` files."
+      - "`aws_s3_bucket.demo.id` becomes `bucket.refAttr \"id\"`, an ordinary value you can pass to any function."
+      - "Nix also builds machines. A NixOS image and the cloud resources that boot it can live in one expression."
+compare_snippets:
+  - { label: "main.tf",             file: main.tf,           lang: hcl }
+  - { label: "flake.nix (excerpt)", file: flake-excerpt.nix, lang: nix }

@@ -1,0 +1,5 @@
+{{ define "main" }}
+<p id="doc">{{ partial "link.html" (dict "doc" "INSTALL.md") }}</p>
+<p id="href">{{ partial "link.html" (dict "href" "https://example.com/x") }}</p>
+<p id="real">{{ partial "link.html" (index hugo.Data.home.docs.links 0) }}</p>
+{{ end }}

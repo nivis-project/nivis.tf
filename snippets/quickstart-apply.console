@@ -1,0 +1,4 @@
+$ nivis plan                              # preview changes
+$ nivis apply                             # apply to fixpoint
+$ nivis state show aws.aws_s3_bucket.demo
+$ nivis destroy

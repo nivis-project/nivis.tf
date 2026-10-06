@@ -1,0 +1,10 @@
+title: "Go deeper"
+text: "Nivis is early. The round trip works across providers, and AWS applies, updates, replaces and destroys today. Issues and experiments are welcome."
+cta: { label: "Try it in five minutes", href: "#start" }
+links:
+  - { label: Installation, doc: INSTALL.md }
+  - { label: Overview,     doc: OVERVIEW.md }
+  - { label: Design,       doc: DESIGN.md }
+  - { label: Data sources, doc: DATASOURCES.md }
+  - { label: IR contract,  doc: IR-CONTRACT.md }
+  - { label: Demos,        href: https://github.com/nivis-project/nivis-demos }

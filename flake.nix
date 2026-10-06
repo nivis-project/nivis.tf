@@ -95,6 +95,24 @@
 
           css-colors = script "css-colors" [ pkgs.gnugrep ];
 
+          snippets = script "snippets" [ pkgs.python3 ];
+
+          # Runs the formatter and compares bytes, so it needs a writable tree.
+          snippets-unformatted =
+            pkgs.runCommand "check-snippets-unformatted"
+              {
+                nativeBuildInputs = [
+                  pkgs.nixfmt
+                  pkgs.findutils
+                  pkgs.diffutils
+                ];
+              }
+              ''
+                cp -r ${self} src && chmod -R u+w src
+                bash src/tests/checks/snippets-unformatted.sh src
+                touch "$out"
+              '';
+
           tokens =
             pkgs.runCommand "check-tokens"
               {
@@ -152,7 +170,13 @@
             if [ "$#" -eq 0 ]; then
               set -- .
             fi
-            find "$@" -name '*.nix' -not -path '*/.*' -print0 | xargs -0 -r nixfmt
+            # snippets/ is content, not code. Two of its files are .nix: one is
+            # a fragment that is not valid Nix on its own, and the other is a
+            # complete flake whose exact formatting is the approved copy. The
+            # formatter rewrote both the first time it ran over them, which is
+            # a silent edit to what the page shows a reader.
+            find "$@" -name '*.nix' -not -path '*/.*' -not -path '*/snippets/*' -print0 \
+              | xargs -0 -r nixfmt
           '';
         }
       );

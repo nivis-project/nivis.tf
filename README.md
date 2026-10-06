@@ -76,6 +76,27 @@ anatomy and the mark formula. `nivis-mockup-reference.html` is the tie-breaker
 for exact spacing and sizes; it is a design-tool file, so its inline styles and
 structure never go into the site.
 
+## Open points for the maintainer
+
+These are decisions the briefing leaves to you. Nothing in the test suite can
+settle them, and none of them block building the site.
+
+1. **The code samples and the comparison table are unverified.** They were
+   assembled from summaries of the READMEs, and `snippets/main.tf` was written
+   as a counterpart for this page. The gate proves they render faithfully and
+   that every link resolves; it cannot prove a flag was not renamed or that a
+   claim about another project is still true. Check them against the
+   repositories before launch.
+2. **Hosting is assumed to be Amplify,** because the domain showed an Amplify
+   placeholder. `amplify.yml` is written for it.
+3. **The mark is coloured here; the original logo is a single grey**
+   (`#4d4d4d`) with translucent layers. Every fill is a custom property, so
+   this is one edit either way.
+4. **The per-project mark parameters are provisional** and may be replaced.
+   They live in `data/marks.yaml`.
+5. **Whether the site grows beyond one page.** The structure allows docs or a
+   blog; this build does not add them.
+
 ## License
 
 Apache-2.0.
