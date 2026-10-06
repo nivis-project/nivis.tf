@@ -39,6 +39,28 @@ fi
 
 count="$(find assets/css -name '*.css' -not -name 'tokens.css' | wc -l)"
 
+# A script can introduce a colour as easily as a stylesheet, and since the hero
+# mark is animated in the browser, the rule has to reach there too.
+#
+# "Builds one from parts" matters as much as a literal. The snippet this site's
+# animation grew from assembled hsl() from a hardcoded hue at run time; a scan
+# looking only for hex would have called it clean. So the function names are
+# matched wherever they appear, open bracket and all, not only inside a
+# complete colour.
+jspattern="#[0-9a-fA-F]{3,8}\\b|\\b(rgba?|hsla?|hwb|lab|lch|oklab|oklch)\\s*\\(|[\"'\''](($named))[\"'\'']"
+jscount=0
+if [ -d assets/js ]; then
+  jshits="$(grep -rnP "$jspattern" assets/js --include='*.js' || true)"
+  if [ -n "$jshits" ]; then
+    echo "css-colors: a color value appears in a script" >&2
+    echo "$jshits" >&2
+    echo "" >&2
+    echo "Every color is a token. Select one with var(--name); do not build one." >&2
+    exit 1
+  fi
+  jscount="$(find assets/js -name '*.js' | wc -l)"
+fi
+
 # The negative fixture. A scan that has never fired is a scan nobody has
 # tested, so prove it fires before reporting the real tree clean.
 fixture="tests/fixtures/stray-color"
@@ -65,6 +87,25 @@ if [ -d "$fixture" ]; then
     exit 1
   fi
   echo "css-colors: negative fixture caught all $notations notations, tokens.css exempt"
+
+  jscaught="$(grep -rnP "$jspattern" "$fixture/assets/js" --include='*.js' || true)"
+  if [ -z "$jscaught" ]; then
+    echo "css-colors: the script negative fixture was not caught; the scan has a hole" >&2
+    echo "  $fixture/assets/js/bad.js contains colors this check should reject" >&2
+    exit 1
+  fi
+  jsnotations="$(printf '%s\n' "$jscaught" | wc -l)"
+  if [ "$jsnotations" -lt 5 ]; then
+    echo "css-colors: the script fixture caught only $jsnotations of 5 notations" >&2
+    printf '%s\n' "$jscaught" >&2
+    exit 1
+  fi
+  if ! printf '%s\n' "$jscaught" | grep -q 'assembled'; then
+    echo "css-colors: the scan missed a colour ASSEMBLED from parts, which is the" >&2
+    echo "  way a script is most likely to introduce one" >&2
+    exit 1
+  fi
+  echo "css-colors: script fixture caught all $jsnotations notations, assembly included"
 fi
 
-echo "css-colors: ok, $count stylesheet(s) scanned, no color outside tokens.css"
+echo "css-colors: ok, $count stylesheet(s) and $jscount script(s) scanned, no color outside tokens.css"

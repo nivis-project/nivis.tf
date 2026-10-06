@@ -1,6 +1,6 @@
 {{- /*
-  Substitutes var(--mark-<n>-<i>) with literal colours, for the standalone SVG
-  files. A file served on its own cannot resolve custom properties.
+  Substitutes var(--mark-ramp-<step>) with literal colours, for the standalone
+  SVG files. A file served on its own cannot resolve custom properties.
 
   The values are computed from the span in data/tokens.yaml, the same source
   tokens.css generates from, so the files cannot drift from the page. No colour
@@ -9,12 +9,14 @@
   Arguments: svg (the markup), copies.
 */ -}}
 {{- $out := .svg -}}
-{{- $n := .copies -}}
+{{- $n := int .copies -}}
 {{- $m := hugo.Data.tokens.mark_span -}}
+{{- $steps := int $m.ramp_steps -}}
 {{- range $i := seq 0 (sub $n 1) -}}
-  {{- $hue := add $m.hue_centre (mul (sub (div (float $i) (float (sub $n 1))) 0.5) $m.hue_spread) -}}
+  {{- $tone := int (math.Round (div (mul (float $steps) (float $i)) (float (sub $n 1)))) -}}
+  {{- $hue := add $m.hue_centre (mul (sub (div (float $tone) (float $steps)) 0.5) $m.hue_spread) -}}
   {{- $c := printf "hsl(%v %v%% %v%%)" $hue $m.saturation $m.lightness -}}
-  {{- $out = replace $out (printf "var(--mark-%v-%v)" $n $i) $c -}}
+  {{- $out = replace $out (printf "var(--mark-ramp-%v)" $tone) $c -}}
 {{- end -}}
 {{- /* safeHTML, because `replace` turns the markup into a plain string and
        emitting it here would escape it before the caller ever sees it. */ -}}

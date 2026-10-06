@@ -19,15 +19,21 @@
   --{{ .name }}: {{ .value }};
 {{- end }}
 
-{{/* One token per (copies, index) pair, from the span in data/tokens.yaml.
-     The hue spread depends on how many copies a mark draws, so a single
-     --mark-i cannot be well defined; --mark-<copies>-<index> can.
+{{/* The brand's hue span as one ramp, from data/tokens.yaml. A copy selects a
+     step by its position in the series: round(steps * i / (copies - 1)).
+
+     One ramp rather than a token family per copy count, because the hero mark
+     animates across copy counts. A family per count re-spreads the palette
+     every time the count crosses an integer, which reads as a colour pop. The
+     step count is the least common multiple of every (copies - 1) the site
+     supports, so each count still lands on exact steps and an animated mark
+     agrees with the built one exactly at rest.
+
      This is the only place a mark colour value exists. */}}
 {{- $m := $t.mark_span }}
-{{- range $n := seq 2 $m.max_copies }}
-{{- range $i := seq 0 (sub $n 1) }}
-  --mark-{{ $n }}-{{ $i }}: hsl({{ add $m.hue_centre (mul (sub (div (float $i) (float (sub $n 1))) 0.5) $m.hue_spread) }} {{ $m.saturation }}% {{ $m.lightness }}%);
-{{- end }}
+{{- $steps := int $m.ramp_steps }}
+{{- range $i := seq 0 $steps }}
+  --mark-ramp-{{ $i }}: hsl({{ add $m.hue_centre (mul (sub (div (float $i) (float $steps)) 0.5) $m.hue_spread) }} {{ $m.saturation }}% {{ $m.lightness }}%);
 {{- end }}
 }
 

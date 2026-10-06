@@ -10,6 +10,8 @@ import pathlib
 import re
 import sys
 
+import yaml
+
 REFERENCE = re.compile(r"\bfile:\s*([A-Za-z0-9._-]+)")
 # Markup, class attributes and style values have no business in content.
 FORBIDDEN = [
@@ -62,8 +64,14 @@ def main():
     # Every project must resolve to a mark that has parameters.
     import json
     projects = (data / "home" / "projects.yaml").read_text()
-    marks = (data / "marks.yaml").read_text()
-    declared = set(re.findall(r"^([a-z][a-z0-9-]*):\s*\{", marks, re.M))
+    # Parsed rather than pattern-matched: an entry may be written as a block
+    # when it carries an animation range, and a regex for the one-line form
+    # silently stops seeing it.
+    marks = yaml.safe_load((data / "marks.yaml").read_text()) or {}
+    declared = {
+        name for name, p in marks.items()
+        if isinstance(p, dict) and "ratio" in p
+    }
     used = set(re.findall(r"^\s+mark:\s*([a-z0-9-]+)\s*$", projects, re.M))
     for m in sorted(used - declared):
         errors.append(f"data/home/projects.yaml uses mark {m!r}, which has no parameters in data/marks.yaml")

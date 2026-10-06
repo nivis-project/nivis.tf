@@ -10,6 +10,27 @@
 #
 # The brief's defaults are ratio 12, 4 copies, 20 degrees, fit 0. The
 # per-project values are provisional and the maintainer's; see README.
-nivis:     { ratio: 12,  copies: 4, rot: 20,  fit: 0 }
+nivis:
+  ratio: 12
+  copies: 4
+  rot: 20
+  fit: 0
+  # The hero mark animates. These are the ranges it sweeps. The values above
+  # are the resting pose: what every other rendering of this mark uses, what a
+  # reader sees with scripting unavailable or reduced motion requested, and
+  # where the animation starts from, easing out to the full range over
+  # ease_in_seconds so nothing jumps when the script begins.
+  #
+  # fit is bounded at 0.2 by the formula, not by taste: the exponent
+  # (1 - 5*fit) reaches zero there and the nesting inverts above it.
+  animate:
+    cycle_seconds: 20
+    ease_in_seconds: 4
+    range:
+      ratio:   [6, 16]
+      copies:  [2, 7]
+      rot:     [0, 60]
+      fit:     [-1, 0.2]
+      opacity: [0.1, 0.45]
 registry:  { ratio: 9.5, copies: 5, rot: 28,  fit: -0.15 }
 tunnel:    { ratio: 7,   copies: 3, rot: 45,  fit: 0.1 }

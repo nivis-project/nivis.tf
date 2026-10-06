@@ -762,3 +762,97 @@ The check now compares against the source fonts and separates the two:
 Failing the build over somebody else's choice of typeface would be a check
 nobody could satisfy. Staying silent about it would hide a real defect in how
 the page renders. Reporting it is the only honest option.
+
+### The hero animation, and what proves it
+
+The mark in the hero is animated by `assets/js/mark.js`, which rewrites the path
+data of the SVG the build already produced. Six end-to-end tests cover it, and
+each was shown to bite by breaking the thing it watches.
+
+| Test | Proven by |
+|---|---|
+| The first frame is the shape the build drew | changing the script's lobe count, and its fit sample count |
+| Reduced motion leaves the mark untouched | deleting the `prefers-reduced-motion` guard |
+| Off-screen stops, returning resumes | replacing the `IntersectionObserver` with `if (false)` |
+| Copies stay nested across the sweep | the build-time bound, below |
+| A frame fits the budget at 6x throttling | measured, not asserted blind |
+| The build's mark is what a reader without scripting sees | covered by the first test's baseline |
+
+The first of those is the one that matters, and it took two attempts.
+
+**A tolerance hides the defect it was meant to find.** The first version compared
+the built path and the script's first frame by resampling both along their arc
+length and allowing a fifth of a unit of divergence. It passed when the script
+was given a different number of samples for the nesting scale, which is a real
+divergence between two implementations of one formula. Resampling by arc length
+smooths exactly that kind of small, systematic difference away.
+
+The comparison is now exact. Both producers round to one decimal, so identical
+arithmetic gives identical points, and any tolerance at all is a tolerance for
+being wrong. Making it exact meant interpreting the minified path data rather
+than comparing text, the same thing `mark.py` had already been forced into. With
+that, changing the sample count from 720 to 180 fails on copy 1, point 0.
+
+**The bound belongs in the build, not the browser.** An animation sweeps a
+parameter rather than setting it, so the formula's bounds apply to every point in
+the range. `mark.html` rejects a sweep whose `fit` would pass 0.2, whose copy
+count would leave 2 to `max_copies`, or whose endpoints are reversed. All four
+were shown to fail the build. The browser test then checks the consequence, that
+the copies really do stay nested, rather than restating the arithmetic.
+
+**The fixture has no hero, so the resting pose is checked on the real page.**
+`mark.py` reads the animation data off the built page and verifies that what the
+build drew is the pose it declares, and that the pose lies inside its own sweep.
+Without it the browser's no-jump test could compare two equally wrong shapes to
+each other and pass. Perturbing the declared ratio by one fails on copy 0,
+point 2, by a tenth of a unit.
+
+### Cost of a frame, measured rather than argued
+
+An earlier exploration argued from operation counts that the animation would be
+expensive, and was wrong by an order of magnitude. So the number is now measured,
+under CPU throttling, in the gate.
+
+| Throttling | median | p95 | worst |
+|---|---|---|---|
+| 1x | 0.30 ms | 0.50 ms | 0.60 ms |
+| 4x | 1.00 ms | 2.80 ms | 6.40 ms |
+| 6x | 1.30 ms | 2.30 ms | 5.20 ms |
+| 10x | 2.20 ms | 4.00 ms | 6.80 ms |
+
+Against a 16.7 ms frame budget, with 6x asserted in the gate. 10x is roughly a
+low-end phone against this machine, and it still has four times the headroom it
+needs. The decision this measurement was taken to inform, whether to narrow the
+sweep or slow the cycle, was therefore not needed.
+
+### One colour ramp, because the copy count moves
+
+Mark colours used to be a token family per copy count: `--mark-4-0` through
+`--mark-4-3`, `--mark-5-0` through `--mark-5-4`, and so on, each spreading the
+brand's hue span over its own number of steps. That is correct for a static mark
+and wrong for an animated one, because the hero's copy count sweeps from 2 to 7
+and crossing an integer re-spreads the whole palette. At a twenty second cycle
+that is a visible colour shift several times a cycle.
+
+They are now one ramp of 61 steps, and a copy selects
+`round(60 * i / (copies - 1))`. 60 is the least common multiple of 1 through 6,
+which is every `copies - 1` the site supports, so every copy count lands on exact
+integer steps and the script agrees with the build exactly at rest. A coarser
+ramp would have been smaller and would have broken the no-jump test, because the
+two would then differ by about a degree of hue while standing still.
+
+`mark.html` and `mark.py` both fail if the ramp stops dividing evenly, which is
+what would happen if `max_copies` were raised without raising the ramp with it.
+
+### The colour rule had to follow the colour
+
+`css-colors` scanned stylesheets, which was the whole surface until a script
+started choosing colours. The snippet this animation grew from assembled
+`hsl()` from a hardcoded hue at run time: a scan looking for hex literals in CSS
+would have called the whole tree clean while a colour value sat in
+`assets/js/`.
+
+The scan now covers `assets/js` as well, and its negative fixture includes a
+colour built from parts rather than written out, with an assertion that
+specifically that line was caught. A fixture of five literals would have let the
+one realistic case through.

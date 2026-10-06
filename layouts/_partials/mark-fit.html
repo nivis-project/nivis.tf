@@ -3,15 +3,17 @@
   inside its parent. The minimum over theta of R(theta)/R(theta-phi), with
   R(theta) = A + cos(3*theta).
 
-  Sampled at 720 points, stated here rather than inherited, because
-  tests/checks/mark.py reimplements this and the two must agree on sampling or
-  they differ in the last decimal for reasons unrelated to the shape.
+  The sample count comes from the caller, so that the one place it is written
+  is the one place the browser also reads it from. perfectFit is a minimisation
+  over a sampled domain: two implementations that disagree on the sample count
+  differ in the last decimal for reasons that have nothing to do with the shape,
+  and the animated mark has to reproduce the built one exactly at rest.
 
   Measured at about 19 ms per mark including path generation, linear in the
   number of marks. No caching or coarsening needed.
 */ -}}
 {{- $a := .a -}}{{- $phi := .phi -}}
-{{- $n := 720 -}}
+{{- $n := int .samples -}}
 {{- $min := 1000000.0 -}}
 {{- range $i := seq 0 (sub $n 1) -}}
   {{- $t := div (mul (mul 2 math.Pi) (float $i)) (float $n) -}}

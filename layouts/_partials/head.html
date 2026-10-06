@@ -79,3 +79,12 @@
 {{- if not $theme }}{{ errorf "assets/js/theme.js is missing" }}{{ end }}
 {{- if hugo.IsProduction }}{{ $theme = $theme | minify | fingerprint "sha256" }}{{ end }}
 <script src="{{ $theme.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $theme.Data.Integrity }}"{{ end }} defer></script>
+{{- /*
+  The hero mark's animation. Deferred, so it runs after the mark it animates
+  exists, and presentational: the build already drew the mark, and this only
+  moves it. Nothing on the page depends on it running.
+*/}}
+{{- $mark := resources.Get "js/mark.js" }}
+{{- if not $mark }}{{ errorf "assets/js/mark.js is missing" }}{{ end }}
+{{- if hugo.IsProduction }}{{ $mark = $mark | minify | fingerprint "sha256" }}{{ end }}
+<script src="{{ $mark.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $mark.Data.Integrity }}"{{ end }} defer></script>

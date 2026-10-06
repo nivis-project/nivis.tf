@@ -16,10 +16,14 @@ differ in the last decimal for reasons that have nothing to do with the shape.
 
 Comparison is on the rendered string after rounding, because that is what ships.
 """
+import html as html_mod
+import json
 import math
 import pathlib
 import re
 import sys
+
+import yaml
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from htmlnorm import normalise
@@ -119,25 +123,98 @@ def parse_points(d):
 
 
 def parse_marks(text):
+    """Every entry in data/marks.yaml that describes a mark.
+
+    An entry may carry an `animate` block alongside its parameters. That block
+    is the hero's sweep and says nothing about the shape the build draws, so it
+    is ignored here.
+    """
     marks = {}
-    for line in text.splitlines():
-        m = re.match(
-            r"^([a-z][a-z0-9-]*):\s*\{\s*ratio:\s*(-?[\d.]+),\s*copies:\s*(\d+),"
-            r"\s*rot:\s*(-?[\d.]+),\s*fit:\s*(-?[\d.]+)\s*\}",
-            line,
+    for name, p in (yaml.safe_load(text) or {}).items():
+        if not isinstance(p, dict) or "ratio" not in p:
+            continue
+        marks[name] = dict(
+            ratio=float(p["ratio"]), copies=int(p["copies"]),
+            rot=float(p["rot"]), fit=float(p["fit"]),
         )
-        if m:
-            marks[m.group(1)] = dict(
-                ratio=float(m.group(2)), copies=int(m.group(3)),
-                rot=float(m.group(4)), fit=float(m.group(5)),
-            )
     return marks
+
+
+def tone(i, copies, steps):
+    """The ramp step a copy selects, matching layouts/_partials/mark.html.
+
+    Rounded away from zero rather than with Python's half-to-even, because Go's
+    math.Round does that. Every supported copy count divides the ramp exactly,
+    so this only matters if that stops being true, and then it should disagree
+    loudly rather than quietly.
+    """
+    return int(math.floor((steps * i) / (copies - 1) + 0.5))
+
+
+def check_animated(path):
+    """The animated mark on the real page rests at the pose it declares.
+
+    The fixture cannot cover this: the hero carries an animation range, and the
+    claim is that what the build drew is the resting end of that range. If it
+    were not, the mark would snap the moment the script ran, and the browser
+    suite's no-jump test would be comparing two wrong shapes to each other.
+    """
+    html = normalise(path.read_text())
+    m = re.search(r'<svg[^>]*data-mark-animation="([^"]*)"[^>]*>(.*?)</svg>', html, re.S)
+    if not m:
+        return ["no animated mark in the built page"]
+
+    cfg = json.loads(html_mod.unescape(m.group(1)))
+    rest = cfg["rest"]
+    a, copies, fit = float(rest["ratio"]), int(rest["copies"]), float(rest["fit"])
+    phi = math.radians(float(rest["rot"]))
+    steps = int(cfg["rampSteps"])
+
+    paths = re.findall(
+        r'<path d="([^"]+)" fill="([^"]+)" fill-opacity="([^"]+)"', m.group(2)
+    )
+    if len(paths) != copies:
+        return [f"the animated mark draws {len(paths)} copies, declares {copies}"]
+
+    errors = []
+    step = perfect_fit(a, phi) ** (1 - 5 * fit)
+    scale = 170.0 / (a + 1.0)
+    for i, (got_d, got_fill, got_op) in enumerate(paths):
+        want = copy_points(a, phi * i, scale * step ** i)
+        got = parse_points(got_d)
+        if got != want:
+            where = next((j for j, (g, w) in enumerate(zip(got, want)) if g != w), None)
+            errors.append(
+                f"the animated mark's copy {i} does not rest at its declared pose: "
+                + (f"point {where}: got {got[where]}, want {want[where]}"
+                   if where is not None else f"{len(got)} points vs {len(want)}")
+            )
+        want_fill = f"var(--mark-ramp-{tone(i, copies, steps)})"
+        if got_fill != want_fill:
+            errors.append(
+                f"the animated mark's copy {i}: fill is {got_fill!r}, want {want_fill!r}"
+            )
+        if abs(float(got_op) - float(rest["opacity"])) > 1e-9:
+            errors.append(
+                f"the animated mark's copy {i}: opacity is {got_op}, "
+                f"declares {rest['opacity']}"
+            )
+
+    for key in ("ratio", "copies", "rot", "fit", "opacity"):
+        lo, hi = cfg["range"][key]
+        if not (lo <= float(rest[key]) <= hi):
+            errors.append(
+                f"the resting {key} is {rest[key]}, outside its own sweep {lo} to {hi}"
+            )
+    return errors
 
 
 def main():
     root = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ".")
     html = normalise(pathlib.Path(sys.argv[2]).read_text())
     marks = parse_marks((root / "data" / "marks.yaml").read_text())
+    span = yaml.safe_load((root / "data" / "tokens.yaml").read_text())["mark_span"]
+    ramp_steps = int(span["ramp_steps"])
     if not marks:
         print("mark: FAIL could not parse data/marks.yaml", file=sys.stderr)
         return 1
@@ -183,8 +260,11 @@ def main():
                 detail = (f"point {where}: got {got[where]}, want {want[where]}"
                           if where is not None else f"{len(got)} points vs {len(want)}")
                 errors.append(f"{name}/{copies} copy {i}: {detail}")
-            if got_fill != f"var(--mark-{copies}-{i})":
-                errors.append(f"{name}/{copies} copy {i}: fill is {got_fill!r}")
+            want_fill = f"var(--mark-ramp-{tone(i, copies, ramp_steps)})"
+            if got_fill != want_fill:
+                errors.append(
+                    f"{name}/{copies} copy {i}: fill is {got_fill!r}, want {want_fill!r}"
+                )
             extents.append(max(max(abs(x), abs(y)) for x, y in got))
             compared += 1
 
@@ -196,13 +276,31 @@ def main():
                     f"({extents[i]:.1f} vs {extents[i-1]:.1f}); the nesting is inverted"
                 )
 
+    for n in range(2, int(span["max_copies"]) + 1):
+        if ramp_steps % (n - 1) != 0:
+            errors.append(
+                f"the ramp has {ramp_steps} steps, which {n} copies does not "
+                f"divide evenly, so an animated mark cannot land on the same "
+                f"colours the build chose"
+            )
+
     if re.search(r"#[0-9a-fA-F]{3,8}\b|rgb\(|oklch\(|hsl\(", html):
         errors.append("a colour literal appears in the generated mark markup")
+
+    animated = 0
+    if len(sys.argv) > 3:
+        found = check_animated(pathlib.Path(sys.argv[3]))
+        errors.extend(found)
+        animated = 1
 
     if errors:
         for e in errors:
             print(f"mark: FAIL {e}", file=sys.stderr)
         return 1
+
+    if animated:
+        print("mark: the animated mark rests at the pose it declares, and that "
+              "pose lies inside its own sweep")
 
     print(
         f"mark: ok, {len(rendered)} marks, {compared} copies, "

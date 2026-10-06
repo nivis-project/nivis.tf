@@ -61,6 +61,15 @@ mark_span:
   saturation: 65
   lightness: 50
   max_copies: 7
+  # The span is emitted as one ramp of this many steps, so a mark animated
+  # across copy counts never recomputes a colour. 60 is the least common
+  # multiple of 1 through 6, which is every (copies - 1) up to max_copies, so
+  # every copy count lands on exact integer steps. tests/checks/mark.sh fails
+  # if it stops dividing evenly.
+  ramp_steps: 60
+  # The copies are translucent; what is behind them is part of how the mark
+  # looks. The brand brief states 25%.
+  opacity: 0.25
 
 type:
   - { name: font-sans,          value: "Hind, 'Segoe UI', system-ui, sans-serif" }

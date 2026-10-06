@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The mark in the hero animates. Its shape, rotation, nesting and copy count
+  move through a slow twenty second cycle. The animation starts from the mark
+  the build drew and eases out from there, so nothing jumps when the script
+  arrives, and it stops when the reader asks for reduced motion, when it is
+  scrolled out of view, or when the tab is hidden.
 - Project scaffolding: a plain-Nix flake with a pinned Hugo extended, an
   OpenSpec store, a beans backlog of five milestones and twenty epics, and a
   gated ship script.
@@ -81,6 +86,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Mark colours come from one ramp of 61 steps rather than a separate token
+  family per copy count. A mark still spreads the brand's hue span across
+  however many copies it draws, but a mark whose copy count changes no longer
+  re-spreads its whole palette as it does so.
 - The mark is now the nested series the brand brief defines: each copy is a
   rotated, scaled version of the one before it, sized so it just fits inside.
   Its colours are spread across the brand's hue range by position, so a mark

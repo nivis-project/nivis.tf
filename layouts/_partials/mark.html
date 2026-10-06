@@ -8,21 +8,33 @@
   Each copy therefore sits inside the one before it, and rotating the series
   also changes how tightly it nests, because step depends on phi.
 
-  Colours come from var(--mark-<copies>-<i>), generated in tokens.css from the
-  span in data/tokens.yaml. No colour value is written here.
+  Colours come from var(--mark-ramp-<step>), generated in tokens.css from the
+  span in data/tokens.yaml. A copy selects its step from its position in the
+  series. No colour value is written here.
 
-  Arguments: name, copies (optional, defaults to the mark's own), size, alt.
+  A mark with an `animate` block in data/marks.yaml also carries that block,
+  its resting parameters and the sampling constants as one JSON attribute, so
+  the script that animates it holds no parameter of its own and cannot drift
+  from what this template drew.
+
+  Arguments: name, copies (optional, defaults to the mark's own), size, alt,
+  animate (optional, emits the animation data).
 */ -}}
+{{- $points := 120 -}}
+{{- $fitSamples := 720 -}}
 {{- $name := .name -}}
 {{- $marks := hugo.Data.marks -}}
 {{- $p := index $marks $name -}}
 {{- if not $p -}}
 {{- errorf "mark %q has no parameters in data/marks.yaml" $name -}}
 {{- end -}}
+{{- $span := hugo.Data.tokens.mark_span -}}
 {{- $a := float $p.ratio -}}
 {{- $copies := int (default $p.copies .copies) -}}
 {{- $fit := float $p.fit -}}
 {{- $phi := mul (float $p.rot) (div math.Pi 180.0) -}}
+{{- $opacity := float $span.opacity -}}
+{{- $steps := int $span.ramp_steps -}}
 
 {{- /* step > 1 turns the nesting inside out: each copy would be drawn larger
        than its parent. The exponent (1 - 5*fit) reaches zero at fit = 0.2, so
@@ -34,28 +46,75 @@
 {{- if lt $copies 2 -}}
 {{- errorf "mark %q draws %v copies; a nested series needs at least 2" $name $copies -}}
 {{- end -}}
-{{- $max := int hugo.Data.tokens.mark_span.max_copies -}}
+{{- $max := int $span.max_copies -}}
 {{- if gt $copies $max -}}
 {{- errorf "mark %q draws %v copies, but only %v colour steps are generated" $name $copies $max -}}
 {{- end -}}
 
-{{- $pf := partial "mark-fit.html" (dict "a" $a "phi" $phi) -}}
+{{- /* Every copy count the site supports has to land on exact ramp steps, or
+       an animated mark and the built one disagree at rest. */ -}}
+{{- if ne (mod $steps (sub $copies 1)) 0 -}}
+{{- errorf "the colour ramp has %v steps, which %v copies does not divide evenly" $steps $copies -}}
+{{- end -}}
+
+{{- $data := "" -}}
+{{- with .animate -}}
+  {{- $anim := $p.animate -}}
+  {{- if not $anim -}}
+  {{- errorf "mark %q is asked to animate but has no animate block in data/marks.yaml" $name -}}
+  {{- end -}}
+  {{- $r := $anim.range -}}
+  {{- /* A range is still a set of parameters, so the formula's bounds apply to
+         every point in it, not only to the resting pose. */ -}}
+  {{- if gt (float (index $r.fit 1)) 0.2 -}}
+  {{- errorf "mark %q sweeps fit up to %v; above 0.2 the nesting inverts because step exceeds 1" $name (index $r.fit 1) -}}
+  {{- end -}}
+  {{- if lt (int (index $r.copies 0)) 2 -}}
+  {{- errorf "mark %q sweeps copies down to %v; a nested series needs at least 2" $name (index $r.copies 0) -}}
+  {{- end -}}
+  {{- if gt (int (index $r.copies 1)) $max -}}
+  {{- errorf "mark %q sweeps copies up to %v, but only %v are supported" $name (index $r.copies 1) $max -}}
+  {{- end -}}
+  {{- range $k, $v := $r -}}
+    {{- if ne (len $v) 2 -}}
+    {{- errorf "mark %q range %q needs a low and a high value" $name $k -}}
+    {{- end -}}
+    {{- if ge (float (index $v 0)) (float (index $v 1)) -}}
+    {{- errorf "mark %q range %q runs %v to %v, which is not a range" $name $k (index $v 0) (index $v 1) -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $rest := dict "ratio" $a "copies" $copies "rot" (float $p.rot) "fit" $fit "opacity" $opacity -}}
+  {{- $data = dict
+        "rest" $rest
+        "range" $r
+        "cycle" (float $anim.cycle_seconds)
+        "easeIn" (float $anim.ease_in_seconds)
+        "points" $points
+        "fitSamples" $fitSamples
+        "rampSteps" $steps
+        "maxCopies" $max
+      | jsonify -}}
+{{- end -}}
+
+{{- $pf := partial "mark-fit.html" (dict "a" $a "phi" $phi "samples" $fitSamples) -}}
 {{- $step := math.Pow $pf (sub 1.0 (mul 5.0 $fit)) -}}
 {{- $scale := div 170.0 (add $a 1.0) -}}
 <svg viewBox="-200 -200 400 400"
   {{- with .size }} width="{{ . }}" height="{{ . }}"{{ end }}
+  {{- with $data }} data-mark-animation="{{ . }}"{{ end }}
   {{- if .alt }} role="img" aria-label="{{ .alt }}"{{ else }} aria-hidden="true"{{ end }}>
 {{- range $i := seq 0 (sub $copies 1) -}}
 {{- $rot := mul $phi (float $i) -}}
 {{- $s := mul $scale (math.Pow $step (float $i)) -}}
+{{- $tone := int (math.Round (div (mul (float $steps) (float $i)) (float (sub $copies 1)))) -}}
 {{- $d := "" -}}
-{{- range $k := seq 0 120 -}}
-  {{- $t := div (mul (mul 2 math.Pi) (float $k)) 120.0 -}}
+{{- range $k := seq 0 $points -}}
+  {{- $t := div (mul (mul 2 math.Pi) (float $k)) (float $points) -}}
   {{- $h := add $a (math.Cos (mul 3 $t)) -}}
   {{- $x := mul $s (mul $h (math.Cos (add $t $rot))) -}}
   {{- $y := mul $s (mul $h (math.Sin (add $t $rot))) -}}
   {{- $d = printf "%s%s%.1f %.1f" $d (cond (eq $k 0) "M" "L") $x (mul -1.0 $y) -}}
 {{- end -}}
-<path d="{{ $d }}Z" fill="var(--mark-{{ $copies }}-{{ $i }})" fill-opacity="0.25"/>
+<path d="{{ $d }}Z" fill="var(--mark-ramp-{{ $tone }})" fill-opacity="{{ $opacity }}"/>
 {{- end }}
 </svg>
