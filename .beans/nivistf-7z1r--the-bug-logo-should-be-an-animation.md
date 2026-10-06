@@ -1,12 +1,11 @@
 ---
 # nivistf-7z1r
 title: the big logo in the hero, should be an animation
-status: draft
+status: in-progress
 type: task
 priority: normal
 created_at: 2026-10-06T15:24:27Z
-updated_at: 2026-10-06T15:50:41Z
-openspec-link: x
+updated_at: 2026-10-06T16:40:03Z
 ---
 
 try this:

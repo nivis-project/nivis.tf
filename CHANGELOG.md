@@ -79,6 +79,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   names the check that proves it, and an item whose check disappears fails, so
   the checklist cannot quietly describe a gate that no longer matches it.
 
+### Changed
+
+- JavaScript may now be used for presentation and effects, not just the theme
+  switch. Scripts stay the site's own, stay within a small budget, and the page
+  still delivers everything it says with scripting unavailable.
+
 ### Fixed
 
 - A recoloured favicon or social image did not reach readers who had visited

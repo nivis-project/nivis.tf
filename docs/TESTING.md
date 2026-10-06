@@ -30,7 +30,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `sections`                   | the page agrees with the data, section by section  | present |
 | `acceptance`                 | the briefing's add-a-project criterion, replayed literally | present |
 | `syntax`                     | highlighting resolves to tokens, prompt not copyable, no wrapping | present |
-| `theming`                    | the theme mechanism: pre-paint ordering, one script, guarded storage | present |
+| `theming`                    | the theme mechanism: pre-paint ordering, script origin and budget, guarded storage | present |
 | `contrast`                   | every pairing meets its minimum, computed from the tokens | present |
 | `warm-is-a-fill`             | `--warm` is never used as a text colour          | present |
 | `e2e`                        | a real browser: layout, keyboard, theme, motion, axe-core | present |
@@ -128,6 +128,30 @@ it is about 10:1. The briefing's "insufficient contrast" is about the light
 palette, where it is 1.76:1. The rule holds in both because warm is a fill, so
 `warm-is-a-fill` greps the stylesheet instead, and `contrast` reports the light
 ratio as a note so the number that motivates the rule stays visible.
+
+### Counting files is not the property you want
+
+`theming` used to assert the page had exactly one inline and one external
+script, standing in for "the theme switch is the only script". That rule was a
+goal encoded as a file count, and it refused presentational work on grounds the
+measurement did not support: a frame of the mark animation costs about 0.3 ms
+against a 16.7 ms budget.
+
+The count is gone. What it was protecting is asserted directly:
+
+- no script comes from another origin,
+- all JavaScript together stays within the 4 KB budget,
+- the page delivers its content, headings, links and code samples with
+  scripting disabled, compared against the same page with scripting on,
+- no visible control exists that cannot work without scripting.
+
+The last two are end-to-end, because they are browser behaviour. The third
+compares the two renderings rather than asserting a fixed list, so it keeps
+meaning as the page grows.
+
+Probed in both directions: a cross-origin script and a budget overrun are still
+rejected, and a second same-origin script is now allowed, which is the point of
+the change.
 
 ### Say which half is deferred, on every run
 

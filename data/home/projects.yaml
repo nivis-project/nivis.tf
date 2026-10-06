@@ -14,15 +14,3 @@ items:
     status: "proof of concept"
     mark: tunnel
     text: "Deploy NixOS closures to machines with no inbound ports, over a Noise-encrypted relay."
-  - name: nivis-demos
-    status: "examples"
-    mark: demos
-    text: "Small reproducible stacks: state bootstrap, one NixOS workload on two clouds, tunnel deploys."
-  - name: terraform-provider-nivis-tunnel
-    status: "provider"
-    mark: tunnel-provider
-    text: "Terraform provider for the Nivis deployment tunnel."
-  - name: terraform-provider-hcloudimage
-    status: "provider"
-    mark: hcloudimage
-    text: "Upload raw disk images to Hetzner Cloud from Terraform or OpenTofu."

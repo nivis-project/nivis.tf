@@ -199,6 +199,55 @@ test.describe("theme", () => {
   });
 });
 
+test.describe("without JavaScript", () => {
+  // The script-count rule used to stand in for this. Now that scripts may be
+  // presentational, the guarantee has to be asserted directly: everything the
+  // page says must survive with scripting unavailable.
+  test("the page delivers its content with scripting disabled", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/");
+
+    const withJs = await (async () => {
+      const p2 = await (await browser.newContext()).newPage();
+      await p2.goto("/");
+      const r = await p2.evaluate(() => ({
+        headings: [...document.querySelectorAll("h1,h2,h3")].map((e) => e.textContent.trim()),
+        links: [...document.querySelectorAll("a[href]")].map((e) => e.getAttribute("href")),
+        code: document.querySelectorAll("figure.code").length,
+      }));
+      await p2.context().close();
+      return r;
+    })();
+
+    const withoutJs = await page.evaluate(() => ({
+      headings: [...document.querySelectorAll("h1,h2,h3")].map((e) => e.textContent.trim()),
+      links: [...document.querySelectorAll("a[href]")].map((e) => e.getAttribute("href")),
+      code: document.querySelectorAll("figure.code").length,
+    }));
+
+    expect(withoutJs.headings, "headings must not depend on scripting").toEqual(withJs.headings);
+    expect(withoutJs.links, "links must not depend on scripting").toEqual(withJs.links);
+    expect(withoutJs.code, "code samples must not depend on scripting").toBe(withJs.code);
+    expect(withoutJs.headings.length).toBeGreaterThan(5);
+
+    await context.close();
+  });
+
+  test("no control is shown that cannot work without scripting", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/");
+    // Every visible button must still do something. The theme switch is the
+    // only button on the page and it ships hidden for precisely this reason.
+    const visibleButtons = await page
+      .locator("button:visible")
+      .count();
+    expect(visibleButtons, "a visible but inert control is worse than none").toBe(0);
+    await context.close();
+  });
+});
+
 test.describe("motion", () => {
   test("smooth scrolling is off when reduced motion is requested", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });

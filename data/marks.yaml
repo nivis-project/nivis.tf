@@ -4,8 +4,5 @@
 # These are provisional. The briefing lists them as a maintainer decision, so
 # expect them to be replaced.
 nivis:            { k: 3, amp: 1.0, rot: 0 }
-registry:         { k: 4, amp: 1.2, rot: 45 }
+registry:         { k: 4, amp: 4.2, rot: 45 }
 tunnel:           { k: 2, amp: 1.6, rot: 0 }
-demos:            { k: 5, amp: 1.4, rot: -18 }
-tunnel-provider:  { k: 2, amp: 1.6, rot: 90 }
-hcloudimage:      { k: 3, amp: 1.8, rot: 180 }
