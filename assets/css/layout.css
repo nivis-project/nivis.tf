@@ -75,3 +75,42 @@
   padding-bottom: var(--space-48);
   color: var(--muted);
 }
+
+.audiences,
+.quickstart {
+  gap: var(--space-40);
+}
+
+.audiences {
+  padding-top: var(--pad-section-tight);
+  padding-bottom: var(--pad-section-tight);
+}
+
+.audience-cards {
+  --col-min: 420px;
+  gap: var(--space-24);
+}
+
+.audience-code {
+  --col-min: 420px;
+  gap: var(--space-24);
+}
+
+.section-head {
+  gap: 12px;
+}
+
+.quickstart {
+  gap: var(--space-48);
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: var(--space-16);
+}
+
+.step-body {
+  gap: 12px;
+  min-width: 0;
+}

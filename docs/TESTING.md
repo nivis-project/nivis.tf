@@ -27,6 +27,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `mark`                       | every generated mark matches an independent evaluation of the curve | present |
 | `assets`                     | one fingerprinted stylesheet, the right font set, nothing external | present |
 | `page-chrome`                | heading structure, same-page link targets, chrome strings from data | present |
+| `sections`                   | the page agrees with the data, section by section  | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -57,6 +58,30 @@ run against a deliberate violation before being trusted.
 | `mark`                       | six probes: flipped rotation, off-by-one sample count, changed radius, colour literal, data changed after render, undeclared mark |
 | `assets`                     | five probes: a CDN stylesheet, a CDN script, a protocol-relative URL, a `url()` in CSS, a dead preload |
 | `page-chrome`                | six probes: a second h1, a skipped rank, a dangling nav target, missing focus rules, a broken skip link, stale chrome |
+| `sections`                   | five probes: a dropped card, broken numbering, an empty optional element, a width breakpoint, an unguarded new section |
+
+### Compare counts, do not transcribe values
+
+`sections` asserts that the number of items the page renders equals the number
+in the data. It deliberately does not assert what those items contain.
+
+"The audiences section has two cards" is the data copied into the test. It
+passes forever, and fails only when somebody edits the data and forgets the
+test, which is the wrong trigger. Comparing counts fails when the **template**
+drops an item, which is the bug worth catching.
+
+Two properties keep it honest as the site grows:
+
+- A section listed in `content/_index.md` with no entry in the check fails the
+  check. A new section therefore cannot arrive unguarded, it forces a decision.
+- The step-numbering assertion builds the site a **second time from reordered
+  data** and asserts the numbers follow positions rather than items. Asserting
+  "the first step is numbered 1" would pass against a hard-coded `1`.
+
+The collapse rule is tested as the briefing states it rather than as "it looks
+right at 360 pixels": the bundled stylesheet must contain no width media query
+at all, because collapsing is supposed to happen through
+`minmax(min(N, 100%), 1fr)`. Whether it looks right is the end-to-end epic.
 
 ### The same-page link nothing else catches
 

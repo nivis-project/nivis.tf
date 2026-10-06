@@ -1,1 +1,24 @@
-<section data-section="quickstart"></section>
+{{- $d := hugo.Data.home.quickstart -}}
+<section id="{{ $d.id }}" aria-labelledby="h-quickstart">
+  <div class="container section stack quickstart">
+    <div class="stack section-head">
+      <h2 id="h-quickstart">{{ $d.title }}</h2>
+      <p class="muted section-lead">{{ $d.lead }}</p>
+    </div>
+    {{- range $i, $step := $d.steps }}
+    <div class="step">
+      <div class="step-number" aria-hidden="true">{{ add $i 1 }}</div>
+      <div class="stack step-body">
+        <h3>{{ $step.title }}</h3>
+        {{- with $step.text }}
+        <p class="muted step-text">{{ . | markdownify }}</p>
+        {{- end }}
+        {{ partial "code.html" $step.snippet }}
+        {{- with $step.link }}
+        <p><a href="{{ partial "link.html" . }}">{{ .label }}</a></p>
+        {{- end }}
+      </div>
+    </div>
+    {{- end }}
+  </div>
+</section>

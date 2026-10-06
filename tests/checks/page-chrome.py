@@ -15,7 +15,7 @@ import sys
 # Sections whose partials are still empty. A navigation entry may point at one
 # of these without resolving yet. This list shrinks to nothing as the sections
 # land, and the check fails loudly if it is empty and a target still dangles.
-UNBUILT_SECTIONS = {"start", "roundtrip", "compare", "projects"}
+UNBUILT_SECTIONS = {"roundtrip", "compare", "projects"}
 
 HEADING = re.compile(r"<h([1-6])\b", re.I)
 ID = re.compile(r"""\bid\s*=\s*["']([^"']+)["']""", re.I)

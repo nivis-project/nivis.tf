@@ -1,1 +1,24 @@
-<section data-section="audiences"></section>
+{{- $d := hugo.Data.home.audiences -}}
+<section class="surface" aria-labelledby="h-audiences">
+  <div class="container section stack audiences">
+    <h2 id="h-audiences">{{ $d.title }}</h2>
+    <div class="grid audience-cards">
+      {{- range $d.cards }}
+      <div class="card stack audience-card">
+        <h3>{{ .title }}</h3>
+        <p class="muted">{{ .lead }}</p>
+        <ul class="bullets">
+          {{- range .points }}
+          <li>{{ . | markdownify }}</li>
+          {{- end }}
+        </ul>
+      </div>
+      {{- end }}
+    </div>
+    <div class="grid audience-code">
+      {{- range $d.compare_snippets }}
+      {{ partial "code.html" . }}
+      {{- end }}
+    </div>
+  </div>
+</section>

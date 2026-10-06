@@ -1,14 +1,15 @@
 ---
 # nivistf-30a3
 title: Audiences and quick start
-status: todo
+status: completed
 type: epic
 priority: normal
 created_at: 2026-10-06T13:02:12Z
-updated_at: 2026-10-06T13:02:41Z
+updated_at: 2026-10-06T14:19:06Z
 parent: nivistf-zsjy
 blocked_by:
     - nivistf-nr5s
+openspec-link: openspec/changes/archive/2026-10-06-audiences-quickstart
 ---
 
 ## Scope
@@ -32,3 +33,41 @@ blocked_by:
 ## Briefing
 
 Sections 4, 6.3 and 6.4.
+
+## Summary of Changes
+
+Shipped as OpenSpec change `audiences-quickstart`, capability `page-sections`.
+
+Both sections render from data: two audience cards with their bullets and two
+labelled code blocks, then four quick start steps with generated numbers,
+optional text and optional links. The quick start's identifier now resolves, so
+it left the `page-chrome` exemption list, which is down to three.
+
+The testing approach shifted here and the reasoning is worth keeping. The
+`sections` check compares COUNTS between the data and the page rather than
+transcribing expected values. "The audiences section has two cards" is the data
+copied into the test: it passes forever and fails only when somebody edits the
+data and forgets the test, which is the wrong trigger. Comparing counts fails
+when the template drops an item, which is the actual bug.
+
+Two self-guarding properties came out of that:
+
+- A section listed in `content/_index.md` with no entry in the check fails the
+  check, so a new section cannot arrive unguarded. Probed with a fictional
+  section name.
+- The step-numbering assertion builds the site a second time from reordered
+  data and asserts the numbers follow positions rather than items. Asserting
+  "the first step is numbered 1" would pass against a hard-coded 1 in the
+  template.
+
+The collapse rule is tested as the briefing states it rather than as "it looks
+right": the bundled stylesheet must contain no width media query at all,
+because collapsing happens through `minmax(min(N, 100%), 1fr)`. A
+`max-width:600px` probe is caught.
+
+Five probes, all caught: a dropped card, broken numbering, an empty optional
+element, a width breakpoint, an unguarded new section.
+
+PyYAML was added to the check environment, defined once in the flake rather
+than per check, because the checks that compare the page against the data need
+to read the data properly rather than by regex.

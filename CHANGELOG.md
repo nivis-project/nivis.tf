@@ -44,3 +44,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The page has a header, a hero and a footer, all rendered from data. A skip
   link reaches the content, every control shows focus, and a navigation link
   pointing at a section that does not exist fails the gate.
+- The audiences and quick start sections render from data. Step numbers follow
+  position, so inserting a step renumbers the rest, and adding a card or a step
+  needs no template change.

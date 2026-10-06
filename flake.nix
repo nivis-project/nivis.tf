@@ -85,7 +85,7 @@
             pkgs.nodejs
             pkgs.playwright-driver
             pkgs.lychee
-            pkgs.python3
+            (pkgs.python3.withPackages (ps: [ ps.pyyaml ]))
             pkgs.jujutsu
             pkgs.git
             pkgs.nixfmt
@@ -138,6 +138,10 @@
       checks = forAllSystems (
         pkgs:
         let
+          # PyYAML is needed by the checks that compare the page against the
+          # data files, so the environment is defined once rather than per check.
+          pythonEnv = pkgs.python3.withPackages (ps: [ ps.pyyaml ]);
+
           # Fonts are built from nixpkgs rather than committed, so anything that
           # builds the site has to stage them first. One place, so a new check
           # cannot forget and silently test a fontless page.
@@ -176,14 +180,28 @@
 
           css-colors = script "css-colors" [ pkgs.gnugrep ];
 
-          snippets = script "snippets" [ pkgs.python3 ];
+          snippets = script "snippets" [ pythonEnv ];
+
+          sections =
+            pkgs.runCommand "check-sections"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/sections.sh src
+                touch "$out"
+              '';
 
           page-chrome =
             pkgs.runCommand "check-page-chrome"
               {
                 nativeBuildInputs = [
                   pkgs.hugo
-                  pkgs.python3
+                  pythonEnv
                 ];
               }
               ''
@@ -197,7 +215,7 @@
               {
                 nativeBuildInputs = [
                   pkgs.hugo
-                  pkgs.python3
+                  pythonEnv
                   pkgs.gnugrep
                 ];
               }
@@ -212,7 +230,7 @@
               {
                 nativeBuildInputs = [
                   pkgs.hugo
-                  pkgs.python3
+                  pythonEnv
                   pkgs.gnugrep
                 ];
               }
@@ -243,7 +261,7 @@
               {
                 nativeBuildInputs = [
                   pkgs.hugo
-                  pkgs.python3
+                  pythonEnv
                 ];
               }
               ''
@@ -258,7 +276,7 @@
               {
                 nativeBuildInputs = [
                   pkgs.hugo
-                  pkgs.python3
+                  pythonEnv
                 ];
               }
               ''
