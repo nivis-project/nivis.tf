@@ -1,1 +1,25 @@
-<section data-section="roundtrip"></section>
+{{- $d := hugo.Data.home.roundtrip -}}
+<section id="{{ $d.id }}" class="band" aria-labelledby="h-roundtrip">
+  <div class="container section stack roundtrip">
+    <div class="stack section-head">
+      <h2 id="h-roundtrip">{{ $d.title }}</h2>
+      <p class="band-lead">{{ $d.lead }}</p>
+    </div>
+    <ol class="grid phases">
+      {{- range $i, $p := $d.phases }}
+      <li class="phase">
+        <div class="mono-label band-label">{{ printf "%02d" (add $i 1) }} {{ $p.label }}</div>
+        <div>{{ $p.text }}</div>
+      </li>
+      {{- end }}
+    </ol>
+    <div class="grid roundtrip-example">
+      {{ partial "code.html" $d.example.snippet }}
+      <div class="stack example-copy">
+        <h3>{{ $d.example.title }}</h3>
+        <p class="band-muted">{{ $d.example.text }}</p>
+        <p><a class="band-link" href="{{ partial "link.html" $d.example.link }}">{{ $d.example.link.label }}</a></p>
+      </div>
+    </div>
+  </div>
+</section>

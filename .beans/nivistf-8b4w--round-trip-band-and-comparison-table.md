@@ -1,14 +1,15 @@
 ---
 # nivistf-8b4w
 title: Round trip band and comparison table
-status: todo
+status: completed
 type: epic
 priority: normal
 created_at: 2026-10-06T13:02:12Z
-updated_at: 2026-10-06T13:02:41Z
+updated_at: 2026-10-06T14:22:34Z
 parent: nivistf-zsjy
 blocked_by:
     - nivistf-nr5s
+openspec-link: openspec/changes/archive/2026-10-06-roundtrip-compare
 ---
 
 ## Scope
@@ -36,3 +37,47 @@ blocked_by:
 ## Briefing
 
 Sections 4, 6.5 and 6.6.
+
+## Summary of Changes
+
+Shipped as OpenSpec change `roundtrip-compare`, capability `page-sections`
+(modified).
+
+The round trip renders as a full-width band with four phase cards whose
+ordinals are generated from position, and the comparison renders as a real
+table with scoped column and row headers, inside its own scrolling box.
+`roundtrip` and `compare` both left the `page-chrome` exemption list, which is
+down to one.
+
+The highlight test is the one worth remembering. The subject column follows a
+flag in `data/home/compare.yaml`. Asserting "the Nivis column is highlighted"
+would pass against a template that hard-codes the first column, which is exactly
+the implementation the flag exists to prevent. So the test moves the flag to
+NixOps 4, rebuilds, and asserts the distinction moved with it.
+
+That test was then verified itself: hard-coding `eq .key "nivis"` in a copy of
+the template makes the check report "the template is hard-coding the column
+instead of reading the flag". That is the third time in this project a
+plausible-looking assertion turned out to prove nothing, so proving the prover
+was worth doing.
+
+Two accessibility decisions made deliberately rather than by habit:
+
+- Scrolling regions are enumerated, not spot-checked. Only `figure.code pre`
+  and `.table-scroll` may scroll sideways; a stray `overflow-x: auto` anywhere
+  else fails the gate naming the selector, and so does losing it on the table.
+  Stricter than measuring document width in a browser, and it catches the
+  regression before it ships.
+- The weak tone is not meaning carried by colour. The qualified cells say "No",
+  "Partly" and "In progress" in words, so the muted colour is emphasis on a
+  distinction the text already makes. The spec records this explicitly and the
+  check fails if a qualified cell is ever empty, so nobody can later simplify
+  the text to a tick and a cross.
+
+Seven probes caught: a div pretending to be a table, an unscoped row header, a
+moved highlight, an empty qualified cell, a stray scrolling region, a lost
+scrolling region, a broken ordinal.
+
+Not covered, and already recorded in README.md: the table's claims about the
+other five projects are unverified. This change proves the table renders what
+the data says, not that the data is true.

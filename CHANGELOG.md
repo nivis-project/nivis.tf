@@ -47,3 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The audiences and quick start sections render from data. Step numbers follow
   position, so inserting a step renumbers the rest, and adding a card or a step
   needs no template change.
+- The round trip band and the comparison table render from data. The table is a
+  real table with scoped headers, the highlighted column follows a flag in the
+  data, and it scrolls inside its own box so the page never scrolls sideways.

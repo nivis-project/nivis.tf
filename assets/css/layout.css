@@ -114,3 +114,30 @@
   gap: 12px;
   min-width: 0;
 }
+
+.band {
+  background: var(--band-bg);
+  color: var(--band-ink);
+}
+
+.roundtrip {
+  gap: var(--space-40);
+}
+
+.phases {
+  --col-min: 230px;
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roundtrip-example {
+  --col-min: 420px;
+  gap: var(--space-32);
+  align-items: center;
+}
+
+.compare {
+  gap: var(--space-32);
+}

@@ -209,3 +209,89 @@ figure.code figcaption {
 .step-text {
   max-width: 40em;
 }
+
+.band-lead {
+  font-size: var(--text-lead-band);
+  color: var(--band-muted);
+  max-width: 40em;
+}
+
+.band-muted {
+  color: var(--band-muted);
+}
+
+.band-label {
+  color: var(--band-muted);
+}
+
+.band-link {
+  color: var(--band-ink);
+}
+
+.phase {
+  border: 1px solid var(--band-line);
+  border-radius: var(--radius-card);
+  padding: var(--pad-card-phase);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.band figure.code pre {
+  background: var(--band-code);
+}
+
+.example-copy {
+  gap: var(--space-16);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.compare-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.compare-table th,
+.compare-table td {
+  text-align: left;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-table thead th {
+  padding: var(--space-16) 20px;
+  font-weight: var(--weight-semibold);
+}
+
+.compare-table thead .corner {
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  width: 24%;
+}
+
+.compare-table tbody th {
+  font-weight: var(--weight-medium);
+}
+
+.compare-table .is-subject {
+  background: var(--accent-soft);
+  font-weight: var(--weight-semibold);
+}
+
+.compare-table [data-tone="weak"] {
+  color: var(--muted);
+}
+
+.compare-table tbody tr:last-child th,
+.compare-table tbody tr:last-child td {
+  border-bottom: 0;
+}

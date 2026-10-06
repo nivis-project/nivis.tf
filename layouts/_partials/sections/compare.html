@@ -1,1 +1,35 @@
-<section data-section="compare"></section>
+{{- $d := hugo.Data.home.compare -}}
+<section id="{{ $d.id }}" aria-labelledby="h-compare">
+  <div class="container section stack compare">
+    <div class="stack section-head">
+      <h2 id="h-compare">{{ $d.title }}</h2>
+      <p class="muted section-lead">{{ $d.lead }}</p>
+    </div>
+    <div class="table-scroll">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th scope="col" class="corner"></th>
+            {{- range $d.tools }}
+            <th scope="col"{{ if .highlight }} class="is-subject"{{ end }}>{{ .name }}</th>
+            {{- end }}
+          </tr>
+        </thead>
+        <tbody>
+          {{- $tools := $d.tools }}
+          {{- range $row := $d.rows }}
+          <tr>
+            <th scope="row">{{ $row.label }}</th>
+            {{- range $tools }}
+            {{- $cell := index $row .key }}
+            {{- if not $cell }}{{ errorf "compare row %q has no cell for tool %q" $row.label .key }}{{ end }}
+            <td{{ if .highlight }} class="is-subject"{{ end }}{{ if eq $cell.tone "weak" }} data-tone="weak"{{ end }}>{{ $cell.value }}</td>
+            {{- end }}
+          </tr>
+          {{- end }}
+        </tbody>
+      </table>
+    </div>
+    <p><a href="{{ partial "link.html" $d.link }}">{{ $d.link.label }}</a></p>
+  </div>
+</section>

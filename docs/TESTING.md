@@ -58,7 +58,39 @@ run against a deliberate violation before being trusted.
 | `mark`                       | six probes: flipped rotation, off-by-one sample count, changed radius, colour literal, data changed after render, undeclared mark |
 | `assets`                     | five probes: a CDN stylesheet, a CDN script, a protocol-relative URL, a `url()` in CSS, a dead preload |
 | `page-chrome`                | six probes: a second h1, a skipped rank, a dangling nav target, missing focus rules, a broken skip link, stale chrome |
-| `sections`                   | five probes: a dropped card, broken numbering, an empty optional element, a width breakpoint, an unguarded new section |
+| `sections`                   | twelve probes, including a div pretending to be a table, a moved highlight, a stray `overflow-x`, and a hard-coded subject column |
+
+### Test the mechanism, not the outcome
+
+`data/home/compare.yaml` flags which tool is the subject of the comparison.
+Asserting "the Nivis column is highlighted" would pass against a template that
+hard-codes the first column, which is exactly the implementation the flag exists
+to prevent.
+
+So the test moves the flag to a different tool, rebuilds, and asserts the
+distinction moved with it. Then that test was itself verified: hard-coding
+`eq .key "nivis"` in a copy of the template makes it report "the template is
+hard-coding the column instead of reading the flag".
+
+The same shape applies to step numbers and phase ordinals: both are proven by
+reordering the data, not by checking that the first one says "1".
+
+### Two accessibility rules that are easy to break later
+
+**Scrolling regions are enumerated.** Only `figure.code pre` and `.table-scroll`
+may scroll sideways. The check parses the bundled stylesheet for every
+`overflow-x: auto` and asserts the selector set matches exactly. A stray one
+anywhere else fails, naming the selector, and so does losing it on the table.
+This is stricter than measuring document width in a browser and it catches the
+regression before it ships. The browser-side proof belongs to the end-to-end
+epic.
+
+**The qualified tone is not meaning carried by colour.** Cells marked
+`tone: weak` render in `--muted`, which on its own would fail for a reader who
+cannot distinguish it. It is acceptable only because those cells say "No",
+"Partly" and "In progress" in words: the colour is emphasis on a distinction the
+text already makes. The check fails if a qualified cell is ever empty, so nobody
+can later "simplify" the text to a tick and a cross.
 
 ### Compare counts, do not transcribe values
 

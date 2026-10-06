@@ -20,8 +20,8 @@ SECTIONS = {
     "hero": None,  # no collection
     "audiences": ("home/audiences.yaml", ["cards"], r'class="card stack audience-card"'),
     "quickstart": ("home/quickstart.yaml", ["steps"], r'class="step"'),
-    "roundtrip": None,
-    "compare": None,
+    "roundtrip": ("home/roundtrip.yaml", ["phases"], r'class="phase"'),
+    "compare": ("home/compare.yaml", ["rows"], r'<th scope="row"'),
     "projects": None,
     "docs": None,
 }
@@ -37,6 +37,7 @@ def main():
     public = pathlib.Path(sys.argv[1])
     root = pathlib.Path(sys.argv[2] if len(sys.argv) > 2 else ".")
     html = (public / "index.html").read_text()
+    css = "".join(p.read_text() for p in public.rglob("*.css"))
     errors = []
 
     front = (root / "content" / "_index.md").read_text()
@@ -80,8 +81,72 @@ def main():
     if re.search(r"<a[^>]*>\s*</a>", html):
         errors.append("the page contains an empty link, so an optional part rendered anyway")
 
+    # The comparison must be a real table with scoped headers, otherwise a
+    # reader using assistive technology cannot tell what a cell means.
+    if "compare" in names:
+        cmp_data = yaml.safe_load((root / "data" / "home" / "compare.yaml").read_text())
+        cols = len(re.findall(r'<th scope="col"', html))
+        want_cols = len(cmp_data["tools"]) + 1  # plus the empty corner cell
+        if cols != want_cols:
+            errors.append(f"the comparison has {cols} column headers, expected {want_cols}")
+        if not re.search(r"<table\b", html):
+            errors.append("the comparison is not a real table")
+
+        # The subject column follows a flag in data, not a hard-coded position.
+        subject = [i for i, tool in enumerate(cmp_data["tools"]) if tool.get("highlight")]
+        if len(subject) != 1:
+            errors.append(f"exactly one tool must be flagged as the subject, found {len(subject)}")
+        else:
+            # One header cell plus one cell per row.
+            want_subject = 1 + len(cmp_data["rows"])
+            got_subject = len(re.findall(r"is-subject", html))
+            if got_subject != want_subject:
+                errors.append(
+                    f"{got_subject} cells are marked as the subject, expected {want_subject}"
+                )
+
+        # A weak tone is emphasis on a distinction the TEXT already makes. If a
+        # weak cell were empty, the meaning would rest on colour alone.
+        weak_in_data = sum(
+            1
+            for row in cmp_data["rows"]
+            for tool in cmp_data["tools"]
+            if isinstance(row.get(tool["key"]), dict) and row[tool["key"]].get("tone") == "weak"
+        )
+        weak_rendered = len(re.findall(r'data-tone="weak"', html))
+        if weak_rendered != weak_in_data:
+            errors.append(
+                f"{weak_rendered} cells render as qualified, data says {weak_in_data}"
+            )
+        for m in re.finditer(r'data-tone="weak"[^>]*>([^<]*)<', html):
+            if not m.group(1).strip():
+                errors.append("a qualified cell has no text, so its meaning rests on colour alone")
+                break
+
+    # Ordinal labels that appear as text are generated from position.
+    ordinals = re.findall(r'class="mono-label band-label">(\d+)\s', html)
+    if ordinals and [int(o) for o in ordinals] != list(range(1, len(ordinals) + 1)):
+        errors.append(f"phase ordinals are {ordinals}, expected consecutive from 1")
+
+    # Exactly these regions may scroll sideways. A new overflow-x anywhere else
+    # is how the page itself starts scrolling on a phone.
+    ALLOWED_SCROLL = {"figure.code pre", ".table-scroll"}
+    scrolling = set()
+    for m in re.finditer(r"([^{}]+)\{[^{}]*overflow-x\s*:\s*auto[^{}]*\}", css):
+        for sel in m.group(1).split(","):
+            sel = sel.strip().split("@")[-1].strip()
+            if sel:
+                scrolling.add(sel)
+    unexpected = scrolling - ALLOWED_SCROLL
+    if unexpected:
+        errors.append(
+            f"these selectors scroll horizontally but are not meant to: {sorted(unexpected)}"
+        )
+    missing_scroll = ALLOWED_SCROLL - scrolling
+    if missing_scroll:
+        errors.append(f"these selectors should scroll horizontally but do not: {sorted(missing_scroll)}")
+
     # Collapsing happens through the grid's minimum width, not breakpoints.
-    css = "".join(p.read_text() for p in public.rglob("*.css"))
     queries = re.findall(r"@media\s*\(([^)]*)\)", css)
     width_queries = [q for q in queries if "width" in q]
     if width_queries:
