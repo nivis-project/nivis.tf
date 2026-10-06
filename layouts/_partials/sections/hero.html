@@ -1,1 +1,16 @@
-<section data-section="hero"></section>
+{{- $d := hugo.Data.home.hero -}}
+<section class="section hero container grid" id="top">
+  <div class="stack hero-copy">
+    <p class="pill">{{ $d.badge }}</p>
+    <h1>{{ $d.title }}</h1>
+    <p class="lead">{{ $d.lead | markdownify }}</p>
+    <div class="hero-actions">
+      <a class="button button-primary" href="{{ $d.primary.href }}">{{ $d.primary.label }}</a>
+      <a class="hero-secondary" href="{{ $d.secondary.href }}">{{ $d.secondary.label }}</a>
+    </div>
+    {{ partial "code.html" $d.snippet }}
+  </div>
+  <div class="hero-mark">
+    {{ partial "mark.html" (dict "name" $d.mark "variant" "full" "alt" $d.mark_alt) }}
+  </div>
+</section>

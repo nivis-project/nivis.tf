@@ -1,1 +1,14 @@
-<footer></footer>
+{{- $site := hugo.Data.site -}}
+<footer class="site-footer">
+  <div class="container site-footer-inner">
+    <div class="footer-brand">
+      {{ partial "mark.html" (dict "name" "nivis" "variant" "footer" "size" 26) }}
+      <span>{{ $site.name }} · {{ $site.license }} · {{ $site.domain }}</span>
+    </div>
+    <div class="footer-links">
+      {{- range $site.footer_links }}
+      <a href="{{ .href }}">{{ .label }}</a>
+      {{- end }}
+    </div>
+  </div>
+</footer>

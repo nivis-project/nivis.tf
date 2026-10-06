@@ -41,3 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The site loads one minified, fingerprinted stylesheet with an integrity hash,
   and serves its own fonts. Nothing on the page reaches another host, and the
   gate fails if anything ever does.
+- The page has a header, a hero and a footer, all rendered from data. A skip
+  link reaches the content, every control shows focus, and a navigation link
+  pointing at a section that does not exist fails the gate.

@@ -66,3 +66,104 @@ figure.code figcaption {
   color: var(--muted);
   margin-bottom: 8px;
 }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.wordmark {
+  font-size: var(--text-wordmark);
+  font-weight: var(--weight-regular);
+  line-height: 1;
+  letter-spacing: var(--tracking-wordmark);
+  padding-top: 4px;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 28px;
+}
+
+.nav-link {
+  text-decoration: none;
+  padding: 10px 0;
+  color: var(--muted);
+}
+
+.nav-link:hover {
+  color: var(--ink);
+}
+
+.theme-switch {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.theme-switch:hover {
+  border-color: var(--accent);
+}
+
+.lead {
+  font-size: var(--text-lead);
+  line-height: var(--leading-lead);
+  color: var(--muted);
+  max-width: 34em;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+}
+
+.hero-secondary {
+  padding: 13px 4px;
+}
+
+.hero .code {
+  align-self: stretch;
+}
+
+.hero .code pre {
+  font-size: var(--text-code-hero);
+  line-height: var(--leading-code-hero);
+  padding: var(--space-16) 20px;
+}
+
+.button-primary:hover,
+.button-outline:hover {
+  filter: brightness(0.94);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--space-24);
+}
+
+.footer-links a {
+  padding: 10px 0;
+  text-decoration: none;
+}

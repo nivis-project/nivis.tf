@@ -3,6 +3,12 @@ title: "fixture"
 disableKinds: [taxonomy, term, RSS, sitemap]
 module:
   mounts:
+    # The fixture's own stubs come first. This tests the DISPATCH mechanism,
+    # so it must not depend on what the real sections happen to render; once
+    # hero.html became real markup, an assertion on the real partials started
+    # failing for a reason that had nothing to do with dispatch.
+    - source: layouts
+      target: layouts
     - source: ../../../layouts
       target: layouts
     - source: ../../../i18n

@@ -178,6 +178,20 @@
 
           snippets = script "snippets" [ pkgs.python3 ];
 
+          page-chrome =
+            pkgs.runCommand "check-page-chrome"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pkgs.python3
+                ];
+              }
+              ''
+                ${stageSrc}
+                bash src/tests/checks/page-chrome.sh src
+                touch "$out"
+              '';
+
           assets =
             pkgs.runCommand "check-assets"
               {

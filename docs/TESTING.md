@@ -26,6 +26,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `snippets-unformatted`       | the formatter never rewrites approved copy        | present |
 | `mark`                       | every generated mark matches an independent evaluation of the curve | present |
 | `assets`                     | one fingerprinted stylesheet, the right font set, nothing external | present |
+| `page-chrome`                | heading structure, same-page link targets, chrome strings from data | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -55,6 +56,35 @@ run against a deliberate violation before being trusted.
 | `snippets-unformatted`       | running the formatter without its exclusion, which really did rewrite a snippet |
 | `mark`                       | six probes: flipped rotation, off-by-one sample count, changed radius, colour literal, data changed after render, undeclared mark |
 | `assets`                     | five probes: a CDN stylesheet, a CDN script, a protocol-relative URL, a `url()` in CSS, a dead preload |
+| `page-chrome`                | six probes: a second h1, a skipped rank, a dangling nav target, missing focus rules, a broken skip link, stale chrome |
+
+### The same-page link nothing else catches
+
+`page-chrome` collects every `#target` in the built page and asserts each one
+resolves to a real element. A navigation link to a section somebody renamed is
+syntactically fine and never leaves the site, so no link checker will ever flag
+it.
+
+Four targets do not resolve yet, because four sections are still empty partials.
+The check carries an explicit `UNBUILT_SECTIONS` exemption rather than being
+switched off. The exemption **fails once every section in it resolves**, so it
+cannot quietly outlive its purpose: whoever lands the last section is told to
+delete it.
+
+What it does not do: prove a focus ring is visible. It asserts `:focus-visible`
+and `:hover` rules exist, because total absence is the common failure and is
+cheap to catch. Visibility needs a real browser and belongs to the end-to-end
+epic. That is deferred, not assumed.
+
+### A test must be coupled to what it tests
+
+The `reorder` fixture asserts that section dispatch follows content order. It
+observed the real section partials, so the moment `hero.html` became real markup
+instead of a stub, it failed for a reason that had nothing to do with dispatch.
+
+The fixture now ships its own section stubs, mounted ahead of the real layouts.
+The alternative, adding `data-section` attributes to production markup so tests
+can see the structure, would have put test scaffolding into what ships.
 
 ### Check the artifact that ships, not a convenient stand-in
 

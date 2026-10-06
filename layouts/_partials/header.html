@@ -1,1 +1,19 @@
-<header></header>
+{{- $site := hugo.Data.site -}}
+<header class="site-header container">
+  <a class="brand" href="#top" aria-label="{{ $site.name }}">
+    {{ partial "mark.html" (dict "name" "nivis" "variant" "full" "size" 40) }}
+    <span class="wordmark">{{ $site.name }}</span>
+  </a>
+  <nav class="site-nav" aria-label="{{ i18n "main_navigation" }}">
+    {{- range $site.nav }}
+    <a class="nav-link" href="{{ .href }}">{{ .label }}</a>
+    {{- end }}
+    <a class="button button-outline" href="{{ $site.nav_cta.href }}">{{ $site.nav_cta.label }}</a>
+    <button class="theme-switch" type="button" aria-label="{{ i18n "theme_switch" }}" hidden>
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/>
+      </svg>
+    </button>
+  </nav>
+</header>
