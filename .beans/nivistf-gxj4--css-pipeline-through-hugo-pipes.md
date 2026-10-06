@@ -1,11 +1,11 @@
 ---
 # nivistf-gxj4
 title: CSS pipeline through Hugo Pipes
-status: todo
+status: in-progress
 type: epic
 priority: high
 created_at: 2026-10-06T13:02:12Z
-updated_at: 2026-10-06T13:02:40Z
+updated_at: 2026-10-06T14:02:37Z
 parent: nivistf-a5q8
 blocked_by:
     - nivistf-w84z

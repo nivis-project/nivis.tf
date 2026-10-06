@@ -24,6 +24,7 @@ names the thing that broke rather than reporting "the tests failed".
 | `css-colors`                 | no color value outside `assets/css/tokens.css`    | present |
 | `snippets`                   | snippets and their references agree both ways; no markup or style values in content | present |
 | `snippets-unformatted`       | the formatter never rewrites approved copy        | present |
+| `mark`                       | every generated mark matches an independent evaluation of the curve | present |
 | `invariants`                 | the content / style / template separation rules   | planned |
 | `html`                       | the generated HTML is valid and semantic          | planned |
 | `links`                      | every external link resolves                      | planned |
@@ -51,6 +52,33 @@ run against a deliberate violation before being trusted.
 | `css-colors`                 | a permanent negative fixture, plus blinding the scan's own pattern |
 | `snippets`                   | five probes: a dangling reference, an orphan file, an HTML tag, a color value, an unresolvable mark |
 | `snippets-unformatted`       | running the formatter without its exclusion, which really did rewrite a snippet |
+| `mark`                       | six probes: flipped rotation, off-by-one sample count, changed radius, colour literal, data changed after render, undeclared mark |
+
+### Why the mark check reimplements the formula
+
+`tests/checks/mark.py` evaluates `r(theta) = a + b * cos(k * theta)` in Python
+from the briefing's formula, and compares every one of the 120 points of every
+layer of every mark against Hugo's output. 9 marks, 31 layers, 3720 points.
+
+Reusing anything from the template would make this circular. Two independent
+implementations of the same formula agreeing is evidence; one implementation
+agreeing with itself is not.
+
+Comparison is on the rendered string after rounding, because that is what ships.
+Comparing floats before rounding would pass on a Hugo whose number formatting
+changed, and the formatting is part of the output.
+
+Whole paths, not spot checks: sampling the first point catches a wrong radius,
+but not a flipped rotation sign, an off-by-one in the sample count, or a `k`
+that only diverges after a quarter turn. All 120 points cost nothing to compare.
+
+**The parameters are deliberately not pinned.** The check reads them from
+`data/marks.yaml`, so editing a parameter moves the expectation with it and the
+check still passes. Only the formula and the layer sets are pinned. This is
+intended: the per-project parameters are provisional and the maintainer may
+replace them. It does mean a probe that edits a parameter before rendering
+proves nothing. The probe that counts changes the data **after** rendering, so
+output and data disagree.
 
 ### Why `snippets-unformatted` exists
 
@@ -114,6 +142,20 @@ what they are supposed to do, but for the wrong reason. The check caught it only
 because it asserts on the failure **message**, not just on the exit code. A
 negative test that checks only "did it fail" will happily pass while testing
 nothing.
+
+### Two probes that proved nothing
+
+Twice now a probe looked like a test and was not one. Both share a shape: the
+probe moved both sides of a comparison, so the check had nothing to notice.
+
+- Editing a snippet file does not trip the byte-for-byte assertion, because the
+  expected value **is** the file.
+- Editing a mark parameter does not trip the geometry check, because the
+  expected path is computed from that parameter.
+
+In each case the real probe corrupts the thing under test (the renderer, the
+output) rather than the thing it is compared against. Treat a probe that passes
+as a result needing an explanation, not as reassurance.
 
 One probe was rejected as too weak: editing the snippet file itself does not
 trip the byte-for-byte assertion, because both sides of the comparison move

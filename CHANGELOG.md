@@ -34,3 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and a project whose mark has no parameters all fail the gate.
 - Documentation links resolve through a single `docs_base`, so moving the docs
   is a one-line change.
+- The mark is generated at build time from the curve in `data/marks.yaml`: the
+  full, project and footer variants, plus an SVG favicon from the same partial.
+  No JavaScript ships and no path data is written by hand. Every fill is a
+  custom property, so the whole family recolours in one edit.

@@ -1,0 +1,8 @@
+{{ define "main" }}
+{{- range $name, $p := hugo.Data.marks }}
+<div data-mark="{{ $name }}" data-variant="project">{{ partial "mark.html" (dict "name" $name "variant" "project" "size" 64) }}</div>
+{{- end }}
+<div data-mark="nivis" data-variant="full">{{ partial "mark.html" (dict "name" "nivis" "variant" "full" "size" 40) }}</div>
+<div data-mark="nivis" data-variant="footer">{{ partial "mark.html" (dict "name" "nivis" "variant" "footer" "size" 26) }}</div>
+<div data-mark="nivis" data-variant="labelled">{{ partial "mark.html" (dict "name" "nivis" "variant" "full" "size" 440 "alt" "A described mark") }}</div>
+{{ end }}

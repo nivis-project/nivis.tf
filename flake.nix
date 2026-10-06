@@ -97,6 +97,21 @@
 
           snippets = script "snippets" [ pkgs.python3 ];
 
+          mark =
+            pkgs.runCommand "check-mark"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pkgs.python3
+                  pkgs.gnugrep
+                ];
+              }
+              ''
+                cp -r ${self} src && chmod -R u+w src
+                bash src/tests/checks/mark.sh src
+                touch "$out"
+              '';
+
           # Runs the formatter and compares bytes, so it needs a writable tree.
           snippets-unformatted =
             pkgs.runCommand "check-snippets-unformatted"

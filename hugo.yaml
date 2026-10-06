@@ -8,6 +8,20 @@ disableKinds:
   - term
   - RSS
   - sitemap
+outputs:
+  home:
+    - HTML
+    - FAVICON
+outputFormats:
+  FAVICON:
+    mediaType: image/svg+xml
+    baseName: favicon
+    isPlainText: true
+    notAlternative: true
+mediaTypes:
+  image/svg+xml:
+    suffixes:
+      - svg
 markup:
   highlight:
     noClasses: false
