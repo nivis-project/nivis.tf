@@ -1,11 +1,12 @@
 ---
 # nivistf-7z1r
 title: the big logo in the hero, should be an animation
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-10-06T15:24:27Z
-updated_at: 2026-10-06T16:43:16Z
+updated_at: 2026-10-06T18:33:05Z
+openspec-link: openspec/changes/archive/2026-10-06-animate-the-hero-mark
 ---
 
 try this:
