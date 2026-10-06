@@ -5,11 +5,10 @@ status: completed
 type: epic
 priority: critical
 created_at: 2026-10-06T13:02:11Z
-updated_at: 2026-10-06T15:26:48Z
+updated_at: 2026-10-06T15:27:37Z
 parent: nivistf-cpt6
 blocked_by:
     - nivistf-gwla
-openspec-link: openspec/changes/archive/2026-10-06-check-the-deployed-artifact
 ---
 
 The gate every later change passes through. Build this before there is a site
