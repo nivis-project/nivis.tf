@@ -14,5 +14,12 @@
 {{- $label := printf " role=\"img\"><title>%s</title" hugo.Data.site.name -}}
 {{- $out = replace $out "<svg viewBox=" "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=" -}}
 {{- $out = replace $out " aria-hidden=\"true\"" "" -}}
-{{- $out = replace $out "\"-200 -200 400 400\">" (printf "\"-200 -200 400 400\"%s>" $label) -}}
+{{- /* The copies are all translucent, and the brief draws them on a background.
+       On the page that is --ground; in a standalone file there is nothing behind
+       them at all, so four 25% layers wash out against whatever the browser
+       composites them on. The ground travels with the file. */ -}}
+{{- $ground := "" -}}
+{{- range hugo.Data.tokens.colors -}}{{ if eq .name "ground" }}{{ $ground = .light }}{{ end }}{{- end -}}
+{{- $bg := printf "<rect x=\"-200\" y=\"-200\" width=\"400\" height=\"400\" fill=\"%s\"/>" $ground -}}
+{{- $out = replace $out "\"-200 -200 400 400\">" (printf "\"-200 -200 400 400\"%s>%s" $label $bg) -}}
 {{ $out | safeHTML }}

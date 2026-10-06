@@ -24,6 +24,15 @@ if ! grep -q '<path d="M' "$fav"; then
   echo "mark: favicon.svg has no generated path data" >&2
   exit 1
 fi
+# The copies are translucent, so what is behind them is part of how the mark
+# looks. On the page that is --ground; a standalone file has to carry it, or it
+# washes out against whatever the browser composites it on. This regressed the
+# moment every copy became translucent.
+if ! grep -q '<rect' "$fav"; then
+  echo "mark: favicon.svg has no background. Its copies are translucent, so" >&2
+  echo "      without one it composites against the browser's own chrome." >&2
+  exit 1
+fi
 if grep -q 'var(--' "$fav"; then
   echo "mark: favicon.svg still references custom properties, which it cannot resolve" >&2
   exit 1

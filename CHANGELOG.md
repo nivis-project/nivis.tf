@@ -92,6 +92,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The favicon washed out to grey. Every copy of the new nested mark is drawn at
+  25% opacity, which the brand brief draws on a background, and the favicon had
+  none, so it composited against the browser's own chrome.
+
 - A recoloured favicon or social image did not reach readers who had visited
   before. Both live at fixed paths and so cannot carry a digest in their
   filename the way the stylesheet does, and browsers cache a favicon through an
