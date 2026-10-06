@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-10-06T15:24:27Z
-updated_at: 2026-10-06T16:40:03Z
+updated_at: 2026-10-06T16:43:16Z
 ---
 
 try this:
@@ -189,3 +189,42 @@ try this:
 });
 </script>
 ```
+
+## Unblocked, not yet built
+
+OpenSpec change `allow-presentational-js`
+(`openspec/changes/archive/2026-10-06-allow-presentational-js`) removed the rule
+that forbade this. It did NOT build the animation, so this stays open.
+
+The old requirement, "the theme switch is the only script", was a goal encoded
+as a file count. Measurement did not support it: a frame of the JS animation
+costs about 0.3 ms of main thread against a 16.7 ms budget. I had argued the
+opposite from operation counts, and was wrong.
+
+Replaced by two requirements that state what the count was standing in for:
+scripts are presentational and optional (same-origin, within budget, page works
+without them), and motion is subordinate to the reader (no animation under
+reduced motion, off-screen, or carrying meaning). The snippet in this bean
+already satisfies the second.
+
+### Still needed before this can be built
+
+The snippet uses `h(theta) = A + B*cos(3*theta)` with NESTED self-similar copies
+scaled by `perfectFit^(1 - 5*fit)`. The shipped mark is five independently-sized
+concentric layers. Building the animation now would animate a shape that the
+brand brief already replaces, so the mark-geometry change should land first.
+
+### What the exploration established
+
+- JS per frame: 0.30 ms median, 0.50 p95, 3.90 worst. Cheap.
+- `fit` above +0.2 inverts the nesting: the exponent `1 - 5*fit` reaches zero
+  there, so `step > 1` and each copy grows larger than its parent. The snippet's
+  config already caps at 0.2, and Pim confirmed it should stay capped.
+- CSS `d` morphing is viable (supported, and genuinely animates), at about
+  3.1 KB gzipped for five keyframes at the site's own 120-point sampling. Pim
+  preferred the JS version.
+- A CSS transform-only variant was rejected on looks: it cannot morph the
+  outline, so it rotates and breathes a fixed shape.
+- Not measured: behaviour on a throttled mobile CPU. 3.9 ms worst case here
+  could be 20 to 40 ms there, which would drop frames. Worth measuring before
+  committing to the JS version at full parameter range.
