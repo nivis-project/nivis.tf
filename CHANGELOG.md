@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A Registry item in the main navigation, pointing at registry.nivis.tf. It is
+  the first navigation entry that leaves the page, so a navigation entry is now
+  checked as either a region of this page, which must exist, or an absolute
+  address on a host the project expects.
 - A mark states its own number of lobes. `registry` is five-lobed and `tunnel`
   two-lobed again, as they were before the mark became a nested series, so a
   project's mark is its own shape rather than the Nivis shape at a different

@@ -7,10 +7,17 @@ section somebody renamed.
 
 A same-page navigation link is the case no link checker catches, because the
 address is syntactically fine and never leaves the site.
+
+Navigation entries are checked against the data rather than against whatever the
+page happens to contain. The generic anchor scan below only looks at `href="#"`
+links, so an entry that leaves the site passes it by never being looked at, and
+an entry with a malformed address passes it for the same reason.
 """
 import pathlib
 import re
 import sys
+
+import yaml
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from htmlnorm import normalise
@@ -48,6 +55,40 @@ def main():
     for t in sorted(targets - ids):
         errors.append(f"a link points at #{t}, which the page does not contain")
 
+    # Every navigation entry, from the data, one of two shapes: a region of this
+    # page, which must exist, or an absolute address, which links.py then checks
+    # for scheme and host. Anything else is a typo that would otherwise render
+    # as a dead relative link.
+    nav = yaml.safe_load((root / "data" / "site.yaml").read_text()).get("nav") or []
+    # VACUOUS-PASS GUARD: with no entries there is nothing to check and this
+    # would report success having looked at nothing.
+    if not nav:
+        errors.append("data/site.yaml has no navigation entries to check")
+    in_page = 0
+    for entry in nav:
+        href = str(entry.get("href", ""))
+        label = entry.get("label", "?")
+        if href.startswith("#"):
+            in_page += 1
+            if href[1:] not in ids:
+                errors.append(
+                    f"navigation entry {label!r} points at {href}, "
+                    f"which the page does not contain"
+                )
+        elif href.startswith("https://"):
+            pass
+        else:
+            errors.append(
+                f"navigation entry {label!r} has address {href!r}, which is "
+                f"neither a region of this page nor an absolute https address"
+            )
+        if href and href not in html:
+            errors.append(f"navigation entry {label!r} does not appear on the page")
+    # The page's own sections must stay reachable: entries that leave the site
+    # are in addition to those, not instead of them.
+    if nav and in_page == 0:
+        errors.append("no navigation entry points at a region of this page")
+
     # The chrome takes its strings from data, so the data's values must appear.
     site = (root / "data" / "site.yaml").read_text()
     for key in ("name", "license", "domain"):
@@ -82,6 +123,7 @@ def main():
     print(
         f"page-chrome: ok, 1 h1 and {len(ranks)} headings in rank order, "
         f"{len(targets)} same-page links all resolve, "
+        f"{len(nav)} navigation entries ({in_page} on this page), "
         f"chrome strings from data, focus and hover rules present"
     )
     return 0

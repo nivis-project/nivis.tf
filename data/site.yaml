@@ -8,6 +8,7 @@ nav:
   - { label: Round trip,  href: "#roundtrip" }
   - { label: Compare,     href: "#compare" }
   - { label: Projects,    href: "#projects" }
+  - { label: Registry,    href: https://registry.nivis.tf }
 nav_cta: { label: GitHub, href: https://github.com/nivis-project }
 footer_links:
   - { label: GitHub, href: https://github.com/nivis-project }

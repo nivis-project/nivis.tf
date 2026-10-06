@@ -23,7 +23,9 @@ from htmlnorm import normalise
 from urllib.parse import urlparse
 
 # Hosts this site is allowed to link to. A new one is a deliberate decision.
-ALLOWED_HOSTS = {"github.com", "nivis.tf"}
+# Subdomains are listed one by one rather than matched by suffix: a suffix rule
+# would quietly admit anything anybody ever points at the domain.
+ALLOWED_HOSTS = {"github.com", "nivis.tf", "registry.nivis.tf"}
 
 
 def main():

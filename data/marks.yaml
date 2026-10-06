@@ -42,4 +42,4 @@ nivis:
       opacity: [0.1, 0.45]
 
 registry:  { lobes: 5, ratio: 9.5, copies: 5, rot: 28,  fit: -0.15 }
-tunnel:    { lobes: 2, ratio: 7,   copies: 3, rot: 45,  fit: 0.1 }
+tunnel:    { lobes: 2, ratio: 7,   copies: 2, rot: 55,  fit: 0.1 }
