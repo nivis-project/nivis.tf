@@ -7,6 +7,7 @@ priority: critical
 created_at: 2026-10-06T13:02:11Z
 updated_at: 2026-10-06T13:38:26Z
 parent: nivistf-cpt6
+openspec-link: openspec/changes/archive/2026-10-06-nix-flake-dev-shell
 ---
 
 Plain Nix, no flake-utils. Supported systems are a literal list that the flake

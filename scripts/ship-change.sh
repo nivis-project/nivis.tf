@@ -93,6 +93,14 @@ echo "==> [3/6] archive OpenSpec change: ${CHANGE}"
 openspec validate "${CHANGE}" "${STORE_FLAG[@]}" --strict
 openspec archive "${CHANGE}" "${STORE_FLAG[@]}" --yes
 
+# Archive renames the change directory with a date prefix, so its real name is
+# only knowable after the fact. Find it rather than guessing it.
+ARCHIVED=""
+if [[ -n "$STORE_ROOT" ]]; then
+  found="$(find "${STORE_ROOT}/openspec/changes/archive" -maxdepth 1 -type d -name "*-${CHANGE}" -print -quit 2>/dev/null || true)"
+  [[ -n "$found" ]] && ARCHIVED="$(basename "$found")"
+fi
+
 echo "==> [4/6] close the bean(s)"
 if [[ ${#BEANS[@]} -eq 0 ]]; then
   echo "    (no --bean given; nothing to close)"
@@ -104,10 +112,16 @@ else
     if [[ -n "$file" ]] && ! grep -q "^## Summary of Changes" "$file"; then
       echo "    warning: $file has no '## Summary of Changes' section" >&2
     fi
-    if [[ -n "$file" ]] && ! grep -q "^openspec-link:" "$file"; then
-      echo "    warning: $file has no 'openspec-link:' front matter" >&2
-    fi
     beans update "$bean" -s completed
+    # beans rewrites the file on every update and drops front-matter keys it
+    # does not know, so openspec-link must be written AFTER the last beans
+    # write. That is the only ordering in which it survives.
+    if [[ -n "$file" && -n "$ARCHIVED" ]]; then
+      python3 scripts/link-bean.py "$file" "openspec/changes/archive/${ARCHIVED}"
+      echo "    linked $bean to openspec/changes/archive/${ARCHIVED}"
+    else
+      echo "    warning: could not link $bean to its archived change" >&2
+    fi
   done
   # A bean whose parent milestone is now fully complete is a judgement call
   # (which siblings count?), so closing a milestone stays the author's job.

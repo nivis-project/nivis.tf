@@ -166,3 +166,15 @@ You are allowed to update these statuses in the task frontmatter:
 When making changes you are allowed to update the date/time in `updated_at` in the task frontmatter
 
 Besides updating status and openspec-link, you are NOT ALLOWED to modify the contents of the task file.
+
+### Why openspec-link is written by the ship script
+
+`beans` rewrites the whole bean file on every update and drops front-matter keys
+it does not recognise, `openspec-link` among them. Writing the link before the
+last `beans update` therefore loses it silently.
+
+`scripts/ship-change.sh` writes it after closing the bean, through
+`scripts/link-bean.py`, and takes the name from the archive directory rather
+than guessing it: `openspec archive` adds a date prefix, so the real name is
+only knowable after the archive has run. Do not write the key by hand before
+shipping.
