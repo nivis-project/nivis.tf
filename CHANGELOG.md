@@ -115,6 +115,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The throttled frame-cost check asserted a statistic that measures how busy the
+  build machine is rather than what a frame costs, so it failed on an unrelated
+  change. It now asserts the cheapest frame and reports the rest.
+
 - The favicon's cache-busting reference had stopped tracking the favicon. It was
   derived from mark parameters and colour tokens that two earlier changes had
   removed, so changing the mark's shape or the palette left a returning reader

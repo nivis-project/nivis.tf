@@ -966,3 +966,30 @@ cancels out of the hue entirely: a copy selects `round(steps * i / (copies - 1))
 and its hue is `centre + (idx/steps - 0.5) * spread`, so doubling the step count
 gives the same colour. Both still enter the digest, because whole maps are
 hashed. Asserting they move it would be asserting something that does not matter.
+
+### A wall-clock assertion inside a parallel sandbox measures the sandbox
+
+The throttled frame-cost check asserted the 95th percentile against a 16.7 ms
+frame budget. It passed for three changes and then failed on one that does not
+touch the animation at all. The same check, same commit, differs by more than
+six times depending on what else is running:
+
+| | min | median | p95 | worst |
+|---|---|---|---|---|
+| on its own | | 1.60 ms | 3.50 ms | 7.50 ms |
+| during a full `nix flake check` | | 4.00 ms | 22.50 ms | 45.70 ms |
+
+Up to two dozen checks build at once in the gate, so the upper statistics
+measure contention rather than the code. Raising the threshold would have hidden
+the signal; re-running until green would have been worse.
+
+It now asserts the **cheapest** frame. Scheduling noise only ever adds time, so
+the minimum is the least contaminated estimate of what the work costs, and a
+change that makes a frame genuinely expensive raises the minimum as much as it
+raises anything else. Median, p95 and worst are still reported, with the line
+saying what they include.
+
+The project already had this shape of reasoning: `links.py` refuses to claim it
+verified that a URL resolves, and leaves that to a separate networked run. A
+performance budget asserted from inside a loaded sandbox is the same kind of
+claim, and the honest version of it is narrower than the one that reads better.
