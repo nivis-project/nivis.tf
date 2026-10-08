@@ -14,24 +14,31 @@
   span in data/tokens.yaml. A copy selects its step from its position in the
   series. No colour value is written here.
 
-  A mark with an `animate` block in data/marks.yaml also carries that block,
-  its resting parameters and the sampling constants as one JSON attribute, so
-  the script that animates it holds no parameter of its own and cannot drift
-  from what this template drew.
+  A caller that passes an `animate` block gets it, the resting parameters and
+  the sampling constants back as one JSON attribute, so the script that animates
+  the mark holds no parameter of its own and cannot read a different account of
+  where rest is than the one the build drew.
 
   Arguments: name, copies (optional, defaults to the mark's own), size, alt,
-  animate (optional, emits the animation data).
+  animate (optional, the ranges to sweep; emits the animation data).
 */ -}}
 {{- $points := 120 -}}
 {{- $fitSamples := 720 -}}
 {{- $name := .name -}}
-{{- $marks := hugo.Data.marks -}}
-{{- $p := index $marks $name -}}
-{{- if not $p -}}
+{{- $marks := hugo.Data.marks.marks -}}
+{{- /* Presence is tested against the keys, not against the value. The Nivis
+       mark states nothing, because it IS the default, so its entry is an empty
+       map and an empty map is indistinguishable from a missing one under a
+       truth test. */ -}}
+{{- $known := slice -}}
+{{- range $k, $_ := $marks }}{{ $known = $known | append $k }}{{ end -}}
+{{- if not (in $known $name) -}}
 {{- errorf "mark %q has no parameters in data/marks.yaml" $name -}}
 {{- end -}}
+{{- /* A mark states only where it differs from the brand default. */ -}}
+{{- $p := merge hugo.Data.marks.default (index $marks $name) -}}
 {{- $span := hugo.Data.tokens.mark_span -}}
-{{- $lobes := int (default 3 $p.lobes) -}}
+{{- $lobes := int $p.lobes -}}
 {{- $a := float $p.ratio -}}
 {{- $copies := int (default $p.copies .copies) -}}
 {{- $fit := float $p.fit -}}
@@ -62,11 +69,11 @@
 
 {{- $data := "" -}}
 {{- with .animate -}}
-  {{- $anim := $p.animate -}}
-  {{- if not $anim -}}
-  {{- errorf "mark %q is asked to animate but has no animate block in data/marks.yaml" $name -}}
-  {{- end -}}
+  {{- $anim := . -}}
   {{- $r := $anim.range -}}
+  {{- if not $r -}}
+  {{- errorf "mark %q was asked to animate but the block has no range" $name -}}
+  {{- end -}}
   {{- /* A range is still a set of parameters, so the formula's bounds apply to
          every point in it, not only to the resting pose. */ -}}
   {{- if gt (float (index $r.fit 1)) 0.2 -}}

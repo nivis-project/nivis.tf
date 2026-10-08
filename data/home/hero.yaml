@@ -8,4 +8,21 @@ primary:   { label: "Try it in five minutes",    href: "#start" }
 secondary: { label: "How the round trip works",  href: "#roundtrip" }
 snippet:   { file: hero-run.console, lang: console }
 mark: nivis
+# How the hero animates its mark. The values in data/marks.yaml are the resting
+# pose: what every other rendering of this mark uses, what a reader sees with
+# scripting unavailable or reduced motion requested, and where the animation
+# starts from, easing out to the full range over ease_in_seconds so nothing
+# jumps when the script begins.
+#
+# fit is bounded at 0.2 by the formula, not by taste: the exponent (1 - 5*fit)
+# reaches zero there and the nesting inverts above it.
+mark_animate:
+  cycle_seconds: 20
+  ease_in_seconds: 4
+  range:
+    ratio:   [6, 16]
+    copies:  [2, 7]
+    rot:     [0, 60]
+    fit:     [-1, 0.2]
+    opacity: [0.1, 0.45]
 mark_alt: "The Nivis mark: layered shapes drawn from h(θ) = a + b · cos 3θ"

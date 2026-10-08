@@ -1,45 +1,45 @@
-# Parameters for the nested series. See section "How the mark is built" in the
-# brand brief, and the `mark` capability.
+# Mark parameters, version 1.
 #
-#   lobes   how many lobes the curve has. Optional, 3 by default, which is what
-#           the brand brief fixes for the Nivis mark. This is the parameter that
-#           makes a project's mark its own shape rather than the same shape at a
-#           different depth.
+# Each entry under `marks` is a document of its own: everything needed to draw
+# that project's mark, and nothing about where or how a site shows it. How many
+# copies a particular rendering draws, at what size, and whether it animates are
+# arguments to the renderer, not properties of the mark.
+#
+# See section "How the mark is built" in the brand brief, and the `mark`
+# capability.
+#
+#   lobes   how many lobes the curve has. The parameter that makes a project's
+#           mark its own shape rather than the same shape at a different depth.
 #   ratio   A/B, how deep the lobes are. B is fixed at 1.
-#   copies  how many nested copies to draw
+#   copies  how many nested copies the mark is drawn with by default
 #   rot     degrees of rotation between one copy and the next
 #   fit     adjusts the nesting scale away from the exact fit. 0 is exact.
 #           Bounded at 0.2: above it the scale exceeds 1 and the nesting
-#           inverts, drawing each copy larger than its parent. A rotation that
-#           is a whole number of the curve's periods (360/lobes degrees) is
-#           rejected: it leaves the curve unchanged, so every copy is drawn at
-#           its parent's size and the series disappears into one shape.
+#           inverts, drawing each copy larger than its parent.
 #
-# The brief's defaults are ratio 12, 4 copies, 20 degrees, fit 0. The
-# per-project values are provisional and the maintainer's; see README.
-nivis:
-  lobes: 3
-  ratio: 12
-  copies: 4
-  rot: 20
-  fit: 0
-  # The hero mark animates. These are the ranges it sweeps. The values above
-  # are the resting pose: what every other rendering of this mark uses, what a
-  # reader sees with scripting unavailable or reduced motion requested, and
-  # where the animation starts from, easing out to the full range over
-  # ease_in_seconds so nothing jumps when the script begins.
-  #
-  # fit is bounded at 0.2 by the formula, not by taste: the exponent
-  # (1 - 5*fit) reaches zero there and the nesting inverts above it.
-  animate:
-    cycle_seconds: 20
-    ease_in_seconds: 4
-    range:
-      ratio:   [6, 16]
-      copies:  [2, 7]
-      rot:     [0, 60]
-      fit:     [-1, 0.2]
-      opacity: [0.1, 0.45]
+# A mark states only where it differs from `default`, so a parameter added here
+# later is inherited by every existing mark rather than breaking it. That is how
+# `lobes` arrived: marks that named no lobe count kept rendering unchanged.
+#
+# `rot` and `lobes` are coupled, and the defaults are no exception. A rotation
+# that is a whole number of the curve's periods (360/lobes degrees) leaves the
+# curve unchanged, so every copy is drawn at its parent's size and the series
+# disappears into one shape. The build rejects it and names the period. A mark
+# stating only `lobes: 18` inherits `rot: 20`, which is exactly one period, and
+# will be rejected for that reason.
+#
+# Compatibility: adding an optional parameter with a default is compatible and
+# keeps version 1. Changing what an existing parameter means is version 2.
+version: 1
 
-registry:  { lobes: 5, ratio: 9.5, copies: 5, rot: 28,  fit: -0.15 }
-tunnel:    { lobes: 2, ratio: 7,   copies: 2, rot: 55,  fit: 0.1 }
+# The brand default, which is what the brief fixes for the Nivis mark.
+default: { lobes: 3, ratio: 12, copies: 4, rot: 20, fit: 0 }
+
+marks:
+  # Empty on purpose. Nivis is the mark the brief defines, so it is the default,
+  # and stating its values again would be a second place for them to live.
+  nivis: {}
+
+  # The per-project values are the maintainer's; see README.
+  registry:     { lobes: 5, ratio: 9.5, copies: 5, rot: 28, fit: -0.15 }
+  nivis-tunnel: { lobes: 2, ratio: 7,   copies: 2, rot: 55, fit: 0.1 }

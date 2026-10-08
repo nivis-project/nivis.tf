@@ -68,10 +68,7 @@ def main():
     # when it carries an animation range, and a regex for the one-line form
     # silently stops seeing it.
     marks = yaml.safe_load((data / "marks.yaml").read_text()) or {}
-    declared = {
-        name for name, p in marks.items()
-        if isinstance(p, dict) and "ratio" in p
-    }
+    declared = set(marks.get("marks") or {})
     used = set(re.findall(r"^\s+mark:\s*([a-z0-9-]+)\s*$", projects, re.M))
     for m in sorted(used - declared):
         errors.append(f"data/home/projects.yaml uses mark {m!r}, which has no parameters in data/marks.yaml")

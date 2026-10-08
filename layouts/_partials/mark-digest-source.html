@@ -3,9 +3,19 @@
   that changes exactly when the images do, which is what the cache-busting
   query needs. Hashing the rendered SVG itself would be more direct, but the
   favicon is a separate output format and is not available from the page.
+
+  Whole maps are serialised rather than named fields picked out of them. Naming
+  fields is how this came to track nothing: it hashed `.k` and `.amp`, removed
+  when the mark became a nested series, and colour tokens whose names begin with
+  "mark-", which moved into the span when the palette changed. Both names went
+  on resolving to empty, so the query stayed at one value while the favicon was
+  redrawn underneath it. A whole map cannot go stale that way, and
+  tests/checks/digest.py fails the gate if any single parameter stops moving it.
 */ -}}
-{{- range hugo.Data.tokens.colors -}}
-{{- if hasPrefix .name "mark-" }}{{ .name }}:{{ .light }};{{ end -}}
-{{- end -}}
-{{- with index hugo.Data.marks "nivis" }}{{ .k }},{{ .amp }},{{ .rot }}{{ end -}}
+{{- $m := hugo.Data.marks -}}
+{{- if not $m.default }}{{ errorf "data/marks.yaml has no default parameter set" }}{{ end -}}
+{{- if not hugo.Data.tokens.mark_span }}{{ errorf "data/tokens.yaml has no mark_span" }}{{ end -}}
+{{- jsonify hugo.Data.tokens.mark_span -}}
+{{- jsonify (merge $m.default (index $m.marks "nivis")) -}}
+{{- range hugo.Data.tokens.colors -}}{{ .name }}:{{ .light }};{{ end -}}
 {{- hugo.Data.site.name -}}

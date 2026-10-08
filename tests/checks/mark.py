@@ -129,20 +129,21 @@ def parse_points(d):
 
 
 def parse_marks(text):
-    """Every entry in data/marks.yaml that describes a mark.
+    """Every mark in data/marks.yaml, resolved against the default set.
 
-    An entry may carry an `animate` block alongside its parameters. That block
-    is the hero's sweep and says nothing about the shape the build draws, so it
-    is ignored here.
+    A mark states only where it differs, so the default has to be applied here
+    too. An entry that states nothing at all is the brand default itself, which
+    is why an empty entry is a mark rather than a missing one.
     """
+    doc = yaml.safe_load(text) or {}
+    default = doc.get("default") or {}
     marks = {}
-    for name, p in (yaml.safe_load(text) or {}).items():
-        if not isinstance(p, dict) or "ratio" not in p:
-            continue
+    for name, p in (doc.get("marks") or {}).items():
+        merged = {**default, **(p or {})}
         marks[name] = dict(
-            lobes=int(p.get("lobes", 3)),
-            ratio=float(p["ratio"]), copies=int(p["copies"]),
-            rot=float(p["rot"]), fit=float(p["fit"]),
+            lobes=int(merged["lobes"]), ratio=float(merged["ratio"]),
+            copies=int(merged["copies"]), rot=float(merged["rot"]),
+            fit=float(merged["fit"]),
         )
     return marks
 

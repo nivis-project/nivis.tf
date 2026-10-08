@@ -1,5 +1,6 @@
 {{ define "main" }}
-{{- range $name, $p := hugo.Data.marks }}
+{{- range $name, $_ := hugo.Data.marks.marks }}
+{{- $p := merge hugo.Data.marks.default $_ }}
 <div data-mark="{{ $name }}" data-copies="{{ $p.copies }}">{{ partial "mark.html" (dict "name" $name "size" 64) }}</div>
 {{- end }}
 <div data-mark="nivis" data-copies="3">{{ partial "mark.html" (dict "name" "nivis" "copies" 3 "size" 26) }}</div>

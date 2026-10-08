@@ -95,6 +95,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Mark parameters are a document of their own. Each project's entry carries
+  everything needed to draw its mark and nothing about where a site shows it, it
+  states only where it differs from the brand default, and the set carries a
+  version. Nothing on the site is drawn differently.
+
 - Mark colours come from one ramp of 61 steps rather than a separate token
   family per copy count. A mark still spreads the brand's hue span across
   however many copies it draws, but a mark whose copy count changes no longer
@@ -109,6 +114,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   still delivers everything it says with scripting unavailable.
 
 ### Fixed
+
+- The favicon's cache-busting reference had stopped tracking the favicon. It was
+  derived from mark parameters and colour tokens that two earlier changes had
+  removed, so changing the mark's shape or the palette left a returning reader
+  looking at the old icon.
 
 - A rotation that is a whole number of the curve's periods is rejected at build
   time. Such a rotation leaves the curve unchanged, so every copy was drawn at

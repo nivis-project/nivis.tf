@@ -45,7 +45,11 @@ d["items"].append({
 })
 projects.write_text(yaml.safe_dump(d, sort_keys=False, allow_unicode=True))
 m = yaml.safe_load(marks.read_text())
-m["acceptance-probe"] = {"ratio": 10, "copies": 4, "rot": 24, "fit": 0}
+# One parameter, not five. A mark states only where it differs, so the probe
+# that replays "adding a project is a data edit" should also be the smallest
+# thing that can be added. The four copies the assertion below counts come from
+# the default set, which is the point.
+m["marks"]["acceptance-probe"] = {"lobes": 7}
 marks.write_text(yaml.safe_dump(m, sort_keys=False, allow_unicode=True))
 PY
 

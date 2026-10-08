@@ -452,6 +452,23 @@
                 touch "$out"
               '';
 
+          # The favicon lives at a fixed path, so its cache-busting query is the
+          # only thing standing between a changed mark and a reader who keeps
+          # the old one. It stopped tracking anything once and nothing noticed.
+          digest =
+            pkgs.runCommand "check-digest"
+              {
+                nativeBuildInputs = [
+                  pkgs.hugo
+                  pythonEnv
+                ];
+              }
+              ''
+                ${stageSrc}
+                python3 src/tests/checks/digest.py src
+                touch "$out"
+              '';
+
           mark =
             pkgs.runCommand "check-mark"
               {

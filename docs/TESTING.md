@@ -920,3 +920,49 @@ rather than reasoned about.
 The browser test's sampling went from two seconds to a full twenty second cycle
 in the same change. The short window was why the question could not be answered
 before: it never reached the part of the sweep it was asking about.
+
+### The favicon's cache key stopped tracking the favicon
+
+The favicon is served from a fixed path, so unlike the bundled stylesheet it
+cannot carry a content digest in its filename. A query derived from the image's
+inputs is the entire mechanism, and browsers cache a favicon more persistently
+than almost anything else, routinely across an ordinary reload.
+
+It had been dead for two changes. `mark-digest-source.html` hashed:
+
+```
+tokens.colors entries whose name starts with "mark-"   ->  none exist
+the nivis mark's .k and .amp                           ->  removed
+the nivis mark's .rot                                  ->  the only live value
+the site name                                          ->  constant
+```
+
+`.k` and `.amp` went when the mark became a nested series. The `mark-` colour
+tokens went when the palette moved into `mark_span`. Both were changes made
+here, both left a name that resolves to empty rather than an error, and the
+query sat at `665b42f9` while the image was redrawn underneath it. Measured:
+setting the Nivis ratio from 12 to 9 visibly changes the favicon and does not
+move the reference by one character.
+
+**This is the failure mode of every derivation that names fields.** The repair
+is not a longer list of names, it is to stop naming them: whole maps are
+serialised, so a removed key cannot silently resolve to empty.
+
+`digest` is its own check because it has to rebuild the site once per input,
+eleven times in all, and because a failure should say "the favicon stopped
+tracking the mark" rather than being buried in the mark check.
+
+**The half that matters is the one asserting nothing moved.** Perturbing each
+input and demanding the reference change is the obvious half, and a derivation
+of `now.UnixNano` passes it perfectly while being useless. So the check also
+rebuilds with no change at all and requires the reference to hold still. Both
+halves were shown to bite: restoring the old derivation fails five assertions
+naming each span field, and a time-based one fails before the probes even start,
+because it produces three different digests on a single page.
+
+The span's structural fields are deliberately not probed. `max_copies` bounds
+what may be asked for rather than describing what is drawn, and `ramp_steps`
+cancels out of the hue entirely: a copy selects `round(steps * i / (copies - 1))`
+and its hue is `centre + (idx/steps - 0.5) * spread`, so doubling the step count
+gives the same colour. Both still enter the digest, because whole maps are
+hashed. Asserting they move it would be asserting something that does not matter.

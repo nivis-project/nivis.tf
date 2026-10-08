@@ -12,5 +12,5 @@ items:
     text: "A browsable catalog of OpenTofu-compatible providers with Nix-native documentation."
   - name: nivis-tunnel
     status: "proof of concept"
-    mark: tunnel
+    mark: nivis-tunnel
     text: "Deploy NixOS closures to machines with no inbound ports, over a Noise-encrypted relay."
