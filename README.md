@@ -18,6 +18,14 @@ The Hugo version is pinned in `.hugo-version`. The `hugo-version-pin` check
 fails when nixpkgs drifts away from it, so the dev shell, the build and the
 deployment cannot quietly disagree.
 
+## Deploy
+
+Amplify runs `scripts/amplify-build.sh`, which installs a pinned Nix release
+when the build machine has none, builds `.#site`, and copies the result to
+`public/`. The deployed site is the flake's site package, the same one the gate
+checks. `scripts/test-amplify-build.sh` runs that script in an Amazon Linux 2023
+container, the base of Amplify's build image, from a shallow clone.
+
 ## Where things live
 
 Content, style and template are strictly separated. This is the project's one
@@ -88,7 +96,7 @@ settle them, and none of them block building the site.
    claim about another project is still true. Check them against the
    repositories before launch.
 2. **Hosting is assumed to be Amplify,** because the domain showed an Amplify
-   placeholder. `amplify.yml` is written for it.
+   placeholder. `amplify.yml` runs the flake there; see [Deploy](#deploy).
 3. **The mark is coloured here; the original logo is a single grey**
    (`#4d4d4d`) with translucent layers. Every fill is a custom property, so
    this is one edit either way.
@@ -111,10 +119,13 @@ settle them, and none of them block building the site.
    matters and it becomes a small follow-up change.
 8. **Fonts are built from nixpkgs, not committed.** The briefing says to
    self-host them in `static/fonts/`, which reads as committing the woff2
-   files. Hind comes from `google-fonts` and IBM Plex Mono from `ibm-plex`,
-   both as TrueType, and the build converts them with `woff2_compress`. That
-   keeps binaries out of the repository and licences tracked by nixpkgs, but it
-   means `hugo server` run outside `nix develop` falls back to the system face.
+   files. IBM Plex Mono comes from nixpkgs `ibm-plex`. Hind is fetched file by
+   file, with its licence, from one pinned google/fonts commit, because nixpkgs
+   `google-fonts` is never in the binary cache and a fresh build machine would
+   fetch every Google font to use one. Both arrive as TrueType and the build
+   converts them with `woff2_compress`. That keeps binaries out of the
+   repository, but it means `hugo server` run outside `nix develop` falls back
+   to the system face. A font update is an edit to `hindFiles` in the flake.
    Say so if you would rather commit the files.
 
 ## License

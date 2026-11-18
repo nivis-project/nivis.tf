@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # .hugo-version is the only place the Hugo version number may appear.
 #
-# Three consumers read it (the flake, the dev shell, amplify.yml) and they
-# cannot share a Nix expression, because amplify.yml is read by a build service
-# with no Nix. A plain file is the only format all three read. This check stops
-# a fourth copy from appearing, which is how the three quietly disagree.
+# The flake checks its Hugo against it, and the dev shell, the build and the
+# deployment all use the flake's Hugo. This check stops a second copy from
+# appearing, which is how two sources quietly disagree.
 set -euo pipefail
 
 root="${1:-.}"

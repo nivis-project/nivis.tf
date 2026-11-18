@@ -7,8 +7,8 @@ gate rather than assuming it was covered:
   1. Every one of the seven real snippets matches its file byte for byte. The
      existing test proved this for ONE fixture sample, which is a different and
      much weaker claim than the checklist makes.
-  2. The deployment configuration publishes the right directory and takes the
-     Hugo version from .hugo-version rather than carrying a second copy.
+  2. The deployment configuration publishes the right directory and builds
+     the flake's site package, rather than carrying a recipe of its own.
   3. Every checklist item names a check that exists, or is marked manual. An
      item claiming automated verification with no such check fails here, so the
      checklist cannot drift away from the gate.
@@ -35,7 +35,7 @@ CHECKLIST = [
     ("light, dark and system modes work and persist without a flash", "e2e"),
     ("all seven snippets render highlighted and match their files byte for byte", "release"),
     ("usable by keyboard only and at 360px", "e2e"),
-    ("the deployment config builds with the pinned Hugo and publishes public/", "release"),
+    ("the deployment builds the flake's site package and publishes public/", "release"),
     ("the README explains running, content, tokens, and adding a section or project", "manual"),
 ]
 
@@ -47,6 +47,62 @@ def rendered_snippets(page_html):
         text = htmllib.unescape(re.sub(r"<[^>]+>", "", m.group(1)))
         out.append(text)
     return out
+
+
+DEPLOY_SCRIPT = "scripts/amplify-build.sh"
+
+
+def deployment_errors(root):
+    errors = []
+    pinned = (root / ".hugo-version").read_text().strip()
+    amplify = root / "amplify.yml"
+    script = root / DEPLOY_SCRIPT
+    if not amplify.is_file():
+        return ["amplify.yml is missing"]
+    conf = amplify.read_text()
+    if not re.search(r"baseDirectory:\s*public\b", conf):
+        errors.append("amplify.yml does not publish `public`")
+    commands = [
+        line.strip()[1:].strip()
+        for line in conf.splitlines()
+        if line.lstrip().startswith("- ") and "**" not in line
+    ]
+    if not any(re.fullmatch(rf"(bash\s+)?\.?/?{re.escape(DEPLOY_SCRIPT)}", c) for c in commands):
+        errors.append(f"no command in amplify.yml runs {DEPLOY_SCRIPT}")
+    for c in commands:
+        if re.search(r"\bhugo\b|\bcurl\b|\bnix\b", c):
+            errors.append(
+                f"amplify.yml builds outside the flake: {c!r}. "
+                f"Only {DEPLOY_SCRIPT} may build the site"
+            )
+    for name, text in (("amplify.yml", conf), (DEPLOY_SCRIPT, script.read_text() if script.is_file() else "")):
+        if pinned in text:
+            errors.append(
+                f"{name} contains the literal Hugo version {pinned}; "
+                f"the flake is the only consumer of .hugo-version"
+            )
+    if not script.is_file():
+        errors.append(f"{DEPLOY_SCRIPT} is missing")
+        return errors
+    body = script.read_text()
+    code = "\n".join(l for l in body.splitlines() if not l.lstrip().startswith("#"))
+    targets = re.findall(r'#([A-Za-z][\w-]*)"', code)
+    if targets != ["site"]:
+        errors.append(
+            f"{DEPLOY_SCRIPT} must build exactly the flake's site package, "
+            f"it builds {targets or 'nothing'}"
+        )
+    if re.search(r"\bhugo\b", code):
+        errors.append(f"{DEPLOY_SCRIPT} runs Hugo itself instead of the flake")
+    if not re.search(r'cp -rL "\$out" public', code):
+        errors.append(f"{DEPLOY_SCRIPT} does not copy the built site to public/")
+    flake = (root / "flake.nix").read_text()
+    site = re.search(r"\n\s+site = pkgs\.stdenv\.mkDerivation \{(.*?)\n        \};", flake, re.S)
+    if not site:
+        errors.append("flake.nix has no site package")
+    elif not re.search(r"^\s*hugo --minify\b", site.group(1), re.M):
+        errors.append("the flake's site package does not build with --minify")
+    return errors
 
 
 def main():
@@ -81,33 +137,7 @@ def main():
         )
 
     # 2. The deployment configuration.
-    amplify = root / "amplify.yml"
-    if not amplify.is_file():
-        errors.append("amplify.yml is missing")
-    else:
-        conf = amplify.read_text()
-        if not re.search(r"baseDirectory:\s*public\b", conf):
-            errors.append("amplify.yml does not publish `public`")
-        # A command must actually READ the file. Matching the bare filename also
-        # matched the comment above it, so the check would have passed on a
-        # config that merely mentioned .hugo-version while using something else.
-        commands = "\n".join(
-            line for line in conf.splitlines() if line.lstrip().startswith("-")
-        )
-        if not re.search(r"(cat|<)\s+\.hugo-version", commands):
-            errors.append(
-                "no command in amplify.yml reads .hugo-version, so the deployed Hugo "
-                "can differ from the one the gate used. Mentioning it in a comment "
-                "is not reading it."
-            )
-        pinned = (root / ".hugo-version").read_text().strip()
-        if pinned in conf:
-            errors.append(
-                f"amplify.yml contains the literal version {pinned}; it must read "
-                f".hugo-version instead of carrying a second copy"
-            )
-        if not re.search(r"hugo.*--minify|--minify.*hugo", conf, re.S):
-            errors.append("amplify.yml does not build with --minify")
+    errors.extend(deployment_errors(root))
 
     # 3. The checklist cannot drift from the gate.
     flake = (root / "flake.nix").read_text()
@@ -129,7 +159,7 @@ def main():
     automated = len(CHECKLIST) - len(notes)
     print(
         f"release: ok, {len(snippet_files)} snippets match byte for byte, "
-        f"the deployment config is single-sourced, and "
+        f"the deployment builds through the flake, and "
         f"{automated} of {len(CHECKLIST)} checklist items are proven by a check that exists"
     )
     for n in notes:

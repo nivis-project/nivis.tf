@@ -77,6 +77,8 @@ run against a deliberate violation before being trusted.
 | `e2e`                        | found three real defects on its first run, see below |
 | `metadata`                   | seven probes: a missing tag, a relative image, a drifted title, an empty tag, a placeholder, a missing image, an unresolved custom property |
 | `font-coverage`              | caught two real uncovered characters on its first run |
+| `font-sources`               | putting `google-fonts` back as the source of the coverage check's fonts |
+| `release` (deployment)       | nine probes: `amplify.yml` running Hugo, fetching with curl, skipping the script, publishing `result`, a literal version; the script building `#fonts`, running Hugo, publishing the symlink; the site package without `--minify` |
 | `separation`                 | four probes: a hard-coded label, a hard-coded accessible name, an inline style, a blinded fixture |
 
 ### What the browser found that nothing else could
@@ -375,6 +377,46 @@ A fourth, process rule: applying the normaliser I wrote the affected list by
 hand and omitted `links.py`, the very file whose failure exposed the problem.
 The audit is now derived from the checks themselves. Anything hand-maintained
 eventually disagrees with reality.
+
+### The gate checked a build nobody deployed
+
+Found on 2026-11-18, while preparing the PNG social preview: every font on
+nivis.tf answered 404. Amplify ran a bare Hugo, and the fonts exist only in the
+Nix build. Every check stages the fonts before building, so the gate proved a
+fontful page while readers were served a fontless one. The earlier lesson below
+covered the minifier flag; it did not cover the inputs.
+
+The fix removes the second recipe rather than checking it harder. Amplify runs
+`scripts/amplify-build.sh`, which builds `.#site` and publishes it, and
+`release` fails when the deployment builds anything else.
+
+`scripts/test-amplify-build.sh` is the proof that the script works on a machine
+like Amplify's, and it is not in the gate, because it needs Docker and the
+network. It clones the working tree with `--depth 1` into
+`public.ecr.aws/amazonlinux/amazonlinux:2023`, runs the script as root, checks
+that every preloaded font and the Hind licence are in `public/` and that
+`google-fonts` never entered the store, and compares the published tree's NAR
+hash with a local `nix build` of the same snapshot.
+
+It found two things on its way to passing: the installer needs `find`, which a
+bare Amazon Linux image lacks, and `nix.sh` does nothing when `USER` is unset.
+The first real Amplify build found a third: its image has no `xz`. The script
+now installs a missing tool with `dnf` when it can, and names the tool and stops
+before installing Nix when it cannot. The container test installs only `git`,
+the one tool Amplify needs to clone, so that path runs on every test.
+
+Measured on the first passing run, against the previous font source:
+
+| Step                     | google-fonts | pinned Hind files |
+|--------------------------|--------------|-------------------|
+| Install Nix              | 24 s         | 53 s              |
+| `nix build .#site`       | 233 s        | 89 s              |
+| Store size after build   | 7.3 GB       | 2.3 GB            |
+
+Install time varies with the mirror; the build and the store size are the
+numbers the font change moved. `font-sources` keeps it that way: it walks every
+derivation that builds the site or the coverage check and fails if
+`google-fonts` is among them.
 
 ### The dominant failure mode: correct pieces, wrong composition
 

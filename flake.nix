@@ -16,9 +16,9 @@
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
 
       # The design uses four Hind weights and two IBM Plex Mono weights, and no
-      # others. Both typefaces are packaged in nixpkgs as TrueType, so the build
-      # converts them to woff2 rather than the repository carrying binaries:
-      # a font update becomes a lock bump, and licences stay tracked by nixpkgs.
+      # others. Both typefaces are fetched as TrueType, so the build converts
+      # them to woff2 rather than the repository carrying binaries. IBM Plex
+      # Mono comes from nixpkgs; Hind comes from hindSource below.
       # Listing the weights explicitly means adding one is a decision somebody
       # makes, not a side effect of a package update.
       # Weight 300 is deliberately absent. The design names it, but no element
@@ -88,6 +88,25 @@
         "U+FFFD"
       ];
 
+      hindRev = "5174b3333331c966c38f4355d50b03ca1c1df2f9";
+      hindFiles = {
+        "Hind-Regular.ttf" = "sha256-Ad4VgCL1MHe1IwPkbeOwq1+yRSIqf/4loqV/3Z6WkWI=";
+        "Hind-Medium.ttf" = "sha256-cPnBFYOQ0Mk6i8JLNbS+SyQ5ZTNyu85zgaMsaG+5Gpg=";
+        "Hind-SemiBold.ttf" = "sha256-F0KhsKupe0naHT7jr1aPqZfFmjz+c4Kfe+wpP0FtJd0=";
+        "OFL.txt" = "sha256-9i7zV9Ohw9J+3TWm4bo1DoqNE0mXl5ZO6t778LOxXR8=";
+      };
+      hindSource =
+        pkgs:
+        pkgs.linkFarm "hind-${builtins.substring 0 8 hindRev}" (
+          nixpkgs.lib.mapAttrsToList (name: hash: {
+            inherit name;
+            path = pkgs.fetchurl {
+              url = "https://raw.githubusercontent.com/google/fonts/${hindRev}/ofl/hind/${name}";
+              inherit hash;
+            };
+          }) hindFiles
+        );
+
       siteFonts =
         pkgs:
         pkgs.runCommand "nivis-tf-fonts"
@@ -103,14 +122,15 @@
           (
             ''
               mkdir -p "$out"
+              cp ${hindSource pkgs}/OFL.txt "$out/Hind-OFL.txt"
             ''
             + nixpkgs.lib.concatMapStrings (f: ''
               src=""
-              for d in ${pkgs.google-fonts}/share/fonts/truetype ${pkgs.ibm-plex}/share/fonts/truetype; do
+              for d in ${hindSource pkgs} ${pkgs.ibm-plex}/share/fonts/truetype; do
                 if [ -f "$d/${f.file}.ttf" ]; then src="$d/${f.file}.ttf"; fi
               done
               if [ -z "$src" ]; then
-                echo "font ${f.file}.ttf not found in google-fonts or ibm-plex" >&2
+                echo "font ${f.file}.ttf not found in hindSource or ibm-plex" >&2
                 exit 1
               fi
               pyftsubset "$src" \
@@ -145,8 +165,8 @@
             # static/fonts is generated and gitignored; see the css-pipeline
             # change. Without this, `hugo server` falls back to the system face.
             mkdir -p static/fonts
-            cp -f ${siteFonts pkgs}/*.woff2 static/fonts/ 2>/dev/null || true
-            chmod u+w static/fonts/*.woff2 2>/dev/null || true
+            cp -f ${siteFonts pkgs}/* static/fonts/ 2>/dev/null || true
+            chmod u+w static/fonts/* 2>/dev/null || true
             if [ "$(hugo version | sed -n 's/.*v\([0-9.]*\).*/\1/p')" != "${hugoVersion}" ]; then
               echo "warning: dev shell Hugo is not ${hugoVersion}, the version pinned in .hugo-version" >&2
             fi
@@ -170,7 +190,7 @@
             # staged into static/ just before the build. See the css-pipeline
             # change's design note.
             mkdir -p static/fonts
-            cp ${siteFonts pkgs}/*.woff2 static/fonts/
+            cp ${siteFonts pkgs}/* static/fonts/
             hugo --minify --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache"
             runHook postBuild
           '';
@@ -199,7 +219,7 @@
           stageSrc = ''
             cp -r ${self} src && chmod -R u+w src
             mkdir -p src/static/fonts
-            cp ${siteFonts pkgs}/*.woff2 src/static/fonts/
+            cp ${siteFonts pkgs}/* src/static/fonts/
           '';
 
           # A check is a script under tests/checks/ run against the source tree.
@@ -217,7 +237,7 @@
           hugo-version-pin = pkgs.runCommand "check-hugo-version-pin" { } ''
             if [ "${pkgs.hugo.version}" != "${hugoVersion}" ]; then
               echo "nixpkgs Hugo is ${pkgs.hugo.version} but .hugo-version pins ${hugoVersion}" >&2
-              echo "update .hugo-version and amplify.yml together, never one alone" >&2
+              echo "update .hugo-version and the flake lock together, never one alone" >&2
               exit 1
             fi
             touch "$out"
@@ -305,7 +325,7 @@
                 # The SOURCE fonts, so the check can tell a subset regression
                 # from a glyph the typeface never had.
                 mkdir -p "$TMPDIR/sources"
-                cp ${pkgs.google-fonts}/share/fonts/truetype/Hind-*.ttf "$TMPDIR/sources/" || true
+                cp ${hindSource pkgs}/Hind-*.ttf "$TMPDIR/sources/" || true
                 cp ${pkgs.ibm-plex}/share/fonts/truetype/IBMPlexMono-*.ttf "$TMPDIR/sources/" || true
                 export FONT_SOURCES="$TMPDIR/sources"
                 ${stageSrc}
@@ -346,7 +366,7 @@
               ''
                 ${stageSrc}
                 cd src
-                # --minify, because that is what amplify.yml deploys. Testing
+                # --minify, because that is what the site package deploys. Testing
                 # the unminified page means testing an artifact nobody serves.
                 hugo --minify --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache" \
                   --environment production > "$TMPDIR/build.log" 2>&1 \
@@ -451,6 +471,18 @@
                 bash src/tests/checks/assets.sh src
                 touch "$out"
               '';
+
+          font-sources =
+            let
+              system = pkgs.stdenv.hostPlatform.system;
+              drv = d: builtins.unsafeDiscardOutputDependency d.drvPath;
+            in
+            pkgs.runCommand "check-font-sources" { nativeBuildInputs = [ pythonEnv ]; } ''
+              python3 ${self}/tests/checks/font-sources.py \
+                ${drv self.packages.${system}.site} \
+                ${drv self.checks.${system}.font-coverage}
+              touch "$out"
+            '';
 
           # The favicon lives at a fixed path, so its cache-busting query is the
           # only thing standing between a changed mark and a reader who keeps

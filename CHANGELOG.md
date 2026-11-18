@@ -115,6 +115,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The deployed site serves its fonts. Amplify built with a bare Hugo, while
+  the fonts exist only in the Nix build, so every font request on nivis.tf
+  answered 404 and readers got the system face. Amplify now installs a pinned
+  Nix and publishes the flake's site package, the same artifact the gate
+  checks. Hind is fetched per file from a pinned google/fonts commit, with its
+  licence, so a fresh build no longer downloads every Google font.
 - The throttled frame-cost check asserted a statistic that measures how busy the
   build machine is rather than what a frame costs, so it failed on an unrelated
   change. It now asserts the cheapest frame and reports the rest.
