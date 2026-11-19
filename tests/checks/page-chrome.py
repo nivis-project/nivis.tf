@@ -27,6 +27,41 @@ ID = re.compile(r"""\bid\s*=\s*["']([^"']+)["']""", re.I)
 ANCHOR = re.compile(r"""<a\b[^>]*?\bhref\s*=\s*["']#([^"']+)["']""", re.I)
 
 
+MAIN_REPO = "https://github.com/nivis-project/nivis"
+
+
+def links_in(fragment):
+    return [
+        (href, re.sub(r"<[^>]+>", "", text).strip())
+        for href, text in re.findall(
+            r"""<a\b[^>]*?\bhref\s*=\s*["']([^"']+)["'][^>]*>(.*?)</a>""", fragment, re.S
+        )
+    ]
+
+
+def cta_and_footer_errors(html, site):
+    errors = []
+    cta = site.get("nav_cta") or {}
+    if cta.get("href") != MAIN_REPO:
+        errors.append(f"nav_cta points at {cta.get('href')!r}, not the main repository {MAIN_REPO}")
+    header = re.search(r"<header\b.*?</header>", html, re.S)
+    found = links_in(header.group(0)) if header else []
+    if (cta.get("href"), cta.get("label")) not in found:
+        errors.append(f"the header has no call to action {cta.get('label')!r} -> {cta.get('href')!r}")
+    if cta.get("icon") and header and not re.search(
+        r'<a\b[^>]*button-outline[^>]*>\s*<svg\b[^>]*aria-hidden="true"', header.group(0)
+    ):
+        errors.append("the call to action names an icon but the header draws no hidden SVG in it")
+    footer = re.search(r"<footer\b.*?</footer>", html, re.S)
+    want = [(l["href"], l["label"]) for l in site.get("footer_links") or []]
+    got = links_in(footer.group(0)) if footer else []
+    if not want:
+        errors.append("data/site.yaml has no footer links")
+    elif got != want:
+        errors.append(f"the footer links are {got}, the data says {want}")
+    return errors
+
+
 def main():
     public = pathlib.Path(sys.argv[1])
     root = pathlib.Path(sys.argv[2] if len(sys.argv) > 2 else ".")
@@ -106,6 +141,8 @@ def main():
         errors.append("the page has no same-page link at all; the skip link is missing")
     elif first_link.group(1) not in ids:
         errors.append(f"the skip link points at #{first_link.group(1)}, which does not exist")
+
+    errors.extend(cta_and_footer_errors(html, yaml.safe_load(site)))
 
     # Focus and hover rules must exist. Whether a focus ring is VISIBLE needs a
     # browser; that is the end-to-end epic. Its total absence is the common bug.

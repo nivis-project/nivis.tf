@@ -374,3 +374,11 @@ figure.code figcaption {
   text-decoration: none;
   font-size: 19px;
 }
+
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  margin-right: 0.4em;
+  color: var(--accent);
+}

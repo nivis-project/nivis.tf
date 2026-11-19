@@ -8,7 +8,10 @@
     {{- range $site.nav }}
     <a class="nav-link" href="{{ .href }}">{{ .label }}</a>
     {{- end }}
-    <a class="button button-outline" href="{{ $site.nav_cta.href }}">{{ $site.nav_cta.label }}</a>
+    <a class="button button-outline" href="{{ $site.nav_cta.href }}">
+      {{- with $site.nav_cta.icon }}{{ partial "icon.html" . | strings.TrimSpace | safeHTML }}{{ end -}}
+      {{- $site.nav_cta.label -}}
+    </a>
     <button class="theme-switch" type="button" data-theme-switch aria-label="{{ i18n "theme_switch" }}" hidden>
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
         <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/>

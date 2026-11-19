@@ -101,7 +101,7 @@ test.describe("keyboard", () => {
       const id = await page.evaluate(() => {
         const el = document.activeElement;
         if (!el || el === document.body) return null;
-        return el.tagName + ":" + (el.getAttribute("href") || el.getAttribute("aria-label") || el.textContent.trim().slice(0, 20));
+        return Array.prototype.indexOf.call(document.querySelectorAll("*"), el);
       });
       if (id) seen.add(id);
     }

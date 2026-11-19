@@ -9,7 +9,10 @@ nav:
   - { label: Compare,     href: "#compare" }
   - { label: Projects,    href: "#projects" }
   - { label: Registry,    href: https://registry.nivis.tf }
-nav_cta: { label: GitHub, href: https://github.com/nivis-project }
+nav_cta: { label: Star on GitHub, href: https://github.com/nivis-project/nivis, icon: star }
 footer_links:
-  - { label: GitHub, href: https://github.com/nivis-project }
-  - { label: Issues, href: https://github.com/nivis-project/nivis/issues }
+  - { label: GitHub,      href: https://github.com/nivis-project/nivis }
+  - { label: Issues,      href: https://github.com/nivis-project/nivis/issues }
+  - { label: Registry,    href: https://registry.nivis.tf }
+  - { label: Discussions, href: https://github.com/nivis-project/nivis/discussions }
+  - { label: Demos,       href: https://github.com/nivis-project/nivis-demos }

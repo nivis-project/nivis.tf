@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The footer links to the registry, the discussions and the demos.
 - A PNG social preview. Links to nivis.tf shared on Mastodon, Discourse,
   Slack, LinkedIn or X now show an image: the build renders the generated SVG
   to a 1200x630 PNG in Hind, and the page declares its type and size.
@@ -98,6 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The header's call to action reads "Star on GitHub", with a star icon, and
+  points at the nivis repository instead of the organisation, where there was
+  nothing to star. The footer's GitHub link follows.
 - Mark parameters are a document of their own. Each project's entry carries
   everything needed to draw its mark and nothing about where a site shows it, it
   states only where it differs from the brand default, and the set carries a
