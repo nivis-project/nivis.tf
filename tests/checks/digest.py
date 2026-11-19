@@ -30,7 +30,7 @@ import yaml
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from htmlnorm import normalise
 
-REF = re.compile(r"(?:favicon\.svg|social\.svg)\?v=([0-9a-f]+)")
+REF = re.compile(r"(?:favicon\.svg|social\.png)\?v=([0-9a-f]+)")
 
 
 def build(root, work, tag):

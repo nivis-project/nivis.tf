@@ -24,6 +24,9 @@ REQUIRED = [
     ("meta", "og:title"),
     ("meta", "og:description"),
     ("meta", "og:image"),
+    ("meta", "og:image:type"),
+    ("meta", "og:image:width"),
+    ("meta", "og:image:height"),
     ("meta", "twitter:card"),
     ("meta", "twitter:title"),
     ("meta", "twitter:description"),
@@ -96,22 +99,39 @@ def main():
         # name the way the bundled stylesheet does, so the digest rides in the
         # query instead.
         name = img.rsplit("/", 1)[-1].split("?", 1)[0]
-        target = public / name
-        if not target.is_file():
-            errors.append(f"og:image points at {name}, which the site does not serve")
+        if not name.endswith(".png"):
+            errors.append(
+                f"og:image points at {name}; most sharing platforms show nothing "
+                f"for an SVG, so the preview must be the rendered PNG"
+            )
+        if values.get("twitter:image") != img:
+            errors.append("twitter:image is not the same image as og:image")
+        if values.get("og:image:type") != "image/png":
+            errors.append("og:image:type does not say image/png")
+        if "?" not in img:
+            errors.append(
+                "og:image carries no cache-busting query, so a recoloured "
+                "image would not reach readers who have visited before"
+            )
+        source = public / (name.rsplit(".", 1)[0] + ".svg")
+        if not source.is_file():
+            errors.append(f"the preview image's source {source.name} is not built")
         else:
-            body = target.read_text()
+            body = source.read_text()
             if "<path d=\"M" not in body:
                 errors.append("the preview image contains no generated mark")
-            if "?" not in img:
-                errors.append(
-                    "og:image carries no cache-busting query, so a recoloured "
-                    "image would not reach readers who have visited before"
-                )
             if "var(--" in body:
                 errors.append(
                     "the preview image still references custom properties, which a "
                     "standalone file cannot resolve"
+                )
+            size = re.search(r'<svg[^>]*\bwidth="(\d+)"[^>]*\bheight="(\d+)"', body)
+            declared = (values.get("og:image:width"), values.get("og:image:height"))
+            if not size:
+                errors.append(f"{source.name} declares no width and height")
+            elif declared != size.groups():
+                errors.append(
+                    f"og:image:width/height say {declared}, the image is {size.groups()}"
                 )
 
     # VACUOUS-PASS GUARD: if the tag patterns stopped matching, every lookup

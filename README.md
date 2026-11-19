@@ -111,12 +111,13 @@ settle them, and none of them block building the site.
    predates the font subsetting: the source TrueType files do not contain them
    either. `nix flake check` reports it on every run. Accept it, change the
    copy, or add a face that covers them.
-7. **The social preview image is an SVG,** generated from the mark at build
-   time. Several platforms will not render SVG previews and will show no image.
-   The alternatives were worse: rasterising needs a new build dependency and a
-   new failure mode, and a hand-exported PNG would be the one asset that
-   silently stayed behind when the mark changed. Say so if a raster preview
-   matters and it becomes a small follow-up change.
+7. **The social preview image is a PNG rendered from a generated SVG.** Hugo
+   draws `social.svg` from the mark, and the site package renders it to
+   `social.png` with resvg and the pinned Hind files, so it cannot fall behind
+   the mark. Most platforms show nothing for an SVG preview. resvg does not
+   read `oklch()`, so the colours are converted to sRGB with coloraide first.
+   A plain `hugo` build has the SVG but not the PNG; only `nix build` and the
+   deployment produce both.
 8. **Fonts are built from nixpkgs, not committed.** The briefing says to
    self-host them in `static/fonts/`, which reads as committing the woff2
    files. IBM Plex Mono comes from nixpkgs `ibm-plex`. Hind is fetched file by

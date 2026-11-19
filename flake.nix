@@ -183,7 +183,11 @@
           pname = "nivis-tf-site";
           version = "0.1.0";
           src = self;
-          nativeBuildInputs = [ pkgs.hugo ];
+          nativeBuildInputs = [
+            pkgs.hugo
+            pkgs.resvg
+            (pkgs.python3.withPackages (ps: [ ps.coloraide ]))
+          ];
           buildPhase = ''
             runHook preBuild
             # Fonts are built from nixpkgs rather than committed, so they are
@@ -192,6 +196,7 @@
             mkdir -p static/fonts
             cp ${siteFonts pkgs}/* static/fonts/
             hugo --minify --destination "$TMPDIR/public" --cacheDir "$TMPDIR/cache"
+            python3 scripts/render-social.py "$TMPDIR/public/social.svg" "$TMPDIR/public/social.png" ${hindSource pkgs}
             runHook postBuild
           '';
           installPhase = ''
@@ -469,6 +474,25 @@
               ''
                 ${stageSrc}
                 bash src/tests/checks/assets.sh src
+                touch "$out"
+              '';
+
+          social-png =
+            let
+              system = pkgs.stdenv.hostPlatform.system;
+            in
+            pkgs.runCommand "check-social-png"
+              {
+                nativeBuildInputs = [
+                  (pkgs.python3.withPackages (ps: [
+                    ps.pyyaml
+                    ps.coloraide
+                    ps.pillow
+                  ]))
+                ];
+              }
+              ''
+                python3 ${self}/tests/checks/social-png.py ${self.packages.${system}.site} ${self}
                 touch "$out"
               '';
 

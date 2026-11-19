@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A PNG social preview. Links to nivis.tf shared on Mastodon, Discourse,
+  Slack, LinkedIn or X now show an image: the build renders the generated SVG
+  to a 1200x630 PNG in Hind, and the page declares its type and size.
 - A Registry item in the main navigation, pointing at registry.nivis.tf. It is
   the first navigation entry that leaves the page, so a navigation entry is now
   checked as either a region of this page, which must exist, or an absolute

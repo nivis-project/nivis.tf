@@ -75,8 +75,9 @@ run against a deliberate violation before being trusted.
 | `theming`                    | seven probes, including moving the pre-paint snippet below the stylesheet and removing the storage guard |
 | `contrast`                   | three probes: a lowered light value, a lowered dark-only value, warm used as text |
 | `e2e`                        | found three real defects on its first run, see below |
-| `metadata`                   | seven probes: a missing tag, a relative image, a drifted title, an empty tag, a placeholder, a missing image, an unresolved custom property |
+| `metadata`                   | ten probes: a missing tag, a relative image, a drifted title, an empty tag, a placeholder, a missing image, an unresolved custom property, an SVG preview, a declared width that disagrees with the image, a wrong image type |
 | `font-coverage`              | caught two real uncovered characters on its first run |
+| `social-png`                 | five probes: text rendered with no font, a blank image, a 1199 px wide image, a transparent ground, no PNG at all |
 | `font-sources`               | putting `google-fonts` back as the source of the coverage check's fonts |
 | `release` (deployment)       | nine probes: `amplify.yml` running Hugo, fetching with curl, skipping the script, publishing `result`, a literal version; the script building `#fonts`, running Hugo, publishing the symlink; the site package without `--minify` |
 | `separation`                 | four probes: a hard-coded label, a hard-coded accessible name, an inline style, a blinded fixture |

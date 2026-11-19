@@ -1,10 +1,7 @@
 {{- /*
-  The preview image, generated from the same mark partial as the favicon.
-
-  SVG is an unusual choice for a social image and several platforms will not
-  render it. The alternatives were worse: rasterising needs a new build
-  dependency and failure mode, and a hand-exported PNG would be the one asset
-  that silently stayed behind when the mark changed. Recorded in the README.
+  The source of the preview image, generated from the same mark partial as the
+  favicon. The site package renders it to social.png, which is what the page
+  references. Recorded in the README.
 */ -}}
 {{- $site := hugo.Data.site -}}
 {{- $svg := partial "mark.html" (dict "name" "nivis" "copies" 4) -}}

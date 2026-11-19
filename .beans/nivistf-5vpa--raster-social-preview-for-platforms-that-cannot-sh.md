@@ -1,12 +1,14 @@
 ---
 # nivistf-5vpa
 title: Raster social preview for platforms that cannot show SVG
-status: todo
+status: completed
 type: feature
+priority: normal
 created_at: 2026-11-18T15:23:02Z
-updated_at: 2026-11-18T15:23:02Z
+updated_at: 2026-11-19T11:48:16Z
 blocked_by:
     - nivistf-b93t
+openspec-link: openspec/changes/archive/2026-11-19-raster-social-preview
 ---
 
 og:image and twitter:image point at social.svg. Mastodon, Discourse, Slack, LinkedIn and X show no image for an SVG preview, so a shared link to nivis.tf arrives without one.
