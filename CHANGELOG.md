@@ -99,6 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The tagline is "Terraform resources as Nix values.", in the hero, the page
+  title and the preview image. The image now reads it from the hero data, so
+  the two cannot drift apart.
 - The header's call to action reads "Star on GitHub", with a star icon, and
   points at the nivis repository instead of the organisation, where there was
   nothing to star. The footer's GitHub link follows.

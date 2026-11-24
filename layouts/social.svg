@@ -19,5 +19,5 @@
 {{ $inner | safeHTML }}
 <text x="520" y="300" font-family="Hind, 'Segoe UI', system-ui, sans-serif" font-size="96" font-weight="600" fill="{{ index $ui "ink" }}">{{ $site.name }}</text>
 <text x="520" y="370" font-family="Hind, 'Segoe UI', system-ui, sans-serif" font-size="40" fill="{{ index $ui "muted" }}">{{ $site.domain }}</text>
-<text x="520" y="440" font-family="Hind, 'Segoe UI', system-ui, sans-serif" font-size="34" fill="{{ index $ui "muted" }}">Terraform providers as first-class Nix values</text>
+<text x="520" y="440" font-family="Hind, 'Segoe UI', system-ui, sans-serif" font-size="34" fill="{{ index $ui "muted" }}">{{ strings.TrimSuffix "." hugo.Data.home.hero.title }}</text>
 </svg>

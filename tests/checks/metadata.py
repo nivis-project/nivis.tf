@@ -134,6 +134,19 @@ def main():
                     f"og:image:width/height say {declared}, the image is {size.groups()}"
                 )
 
+    hero = re.search(r'^title:\s*"?(.*?)"?\s*$', (pathlib.Path("data/home/hero.yaml")).read_text(), re.M)
+    if not hero:
+        errors.append("data/home/hero.yaml has no title, which is the tagline's one source")
+    else:
+        tagline = hero.group(1).rstrip(".")
+        if page_title and tagline not in page_title.group(1):
+            errors.append(f"the page title {page_title.group(1)!r} does not carry the tagline {tagline!r}")
+        if tagline not in re.sub(r"<[^>]+>", "", html):
+            errors.append(f"the page does not show the tagline {tagline!r}")
+        svg = public / "social.svg"
+        if svg.is_file() and f">{tagline}</text>" not in svg.read_text():
+            errors.append(f"social.svg does not carry the tagline {tagline!r}")
+
     # VACUOUS-PASS GUARD: if the tag patterns stopped matching, every lookup
     # would return None and the "missing" errors would fire, so this check
     # cannot pass by finding nothing. Asserted explicitly all the same.
